@@ -23,13 +23,6 @@
 - **Description:** Серия обручей и кубок в конце по правилам из CEL-00012.
 - **Блокирована:** CEL-00012, CEL-00013
 
-### [CEL-00017] build: версии, CHANGELOG.md и make bump-version
-- **Status:** Идея
-- **Complexity:** 3
-- **Description:** Перенести из `dji_tello_cli`: `Makefile.version`, `scripts/bump.py`
-  (префикс CEL, модули из `AGENTS.md`), `CHANGELOG.md`, чистка выполненных задач из `TODO.md`.
-  Владелец: "позже, отдельной задачей".
-
 ### [CEL-00018] art: слоник и анимации — без Blender и без художника
 - **Status:** Идея
 - **Complexity:** 21

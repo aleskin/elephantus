@@ -4,7 +4,7 @@ CTEST     ?= $(patsubst %cmake,%ctest,$(CMAKE))
 BUILD_DIR ?= build
 JOBS      ?= $(shell nproc 2>/dev/null || echo 4)
 
-.PHONY: all build test run shots clean format
+.PHONY: all build test run shots clean format bump-dry bump-version
 
 all: build
 
@@ -32,6 +32,13 @@ shots: build
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+# Version bump: Makefile.version + CHANGELOG.md + TODO.md, one commit. TYPE=patch|minor|major.
+bump-dry:
+	python3 scripts/bump.py $(or $(TYPE),patch) --dry-run
+
+bump-version:
+	python3 scripts/bump.py $(or $(TYPE),patch)
 
 # Code style (.clang-format: Allman, 4 spaces). Override the binary with CLANG_FORMAT=...
 CLANG_FORMAT ?= clang-format

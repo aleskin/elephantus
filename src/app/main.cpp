@@ -120,7 +120,8 @@ int main(int argc, char** argv)
             ce::core::load_campaign(find_assets(options) / "levels" / "campaign.txt"),
             load_drawable_level};
 
-        const std::string title{ce::core::game_title()};
+        const std::string title =
+            std::string{ce::core::game_title()} + " " + std::string{ce::core::game_version()};
         unsigned int flags = FLAG_MSAA_4X_HINT;
         if (options.script)
         {

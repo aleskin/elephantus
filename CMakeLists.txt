@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(circus_elephant LANGUAGES C CXX)
+# Makefile.version is the single source of truth for the version (make bump-version).
+file(READ "${CMAKE_CURRENT_SOURCE_DIR}/Makefile.version" CE_VERSION)
+# Re-run configure when the bump rewrites the file, or the game keeps the old version.
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS Makefile.version)
+string(STRIP "${CE_VERSION}" CE_VERSION)
+if(NOT CE_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+$")
+    message(FATAL_ERROR "Makefile.version must be MAJOR.MINOR.PATCH, got '${CE_VERSION}'")
+endif()
+
+project(circus_elephant VERSION ${CE_VERSION} LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -30,6 +39,7 @@ add_library(elephant_core STATIC
     src/core/script/script.cpp
 )
 target_include_directories(elephant_core PUBLIC src)
+target_compile_definitions(elephant_core PRIVATE CE_VERSION="${CE_VERSION}")
 ce_strict(elephant_core)
 
 include(cmake/raylib.cmake)
@@ -63,7 +73,7 @@ if(CE_BUILD_TESTS)
     )
     target_link_libraries(elephant_tests PRIVATE elephant_core GTest::gtest_main)
     target_compile_definitions(elephant_tests PRIVATE CE_ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets"
-        CE_SCRIPTS_DIR="${CMAKE_SOURCE_DIR}/tests/scripts")
+        CE_SCRIPTS_DIR="${CMAKE_SOURCE_DIR}/tests/scripts" CE_VERSION="${CE_VERSION}")
     ce_strict(elephant_tests)
     include(GoogleTest)
     gtest_discover_tests(elephant_tests)
