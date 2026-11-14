@@ -213,10 +213,13 @@ make format       # clang-format (Allman, 4 пробела)
 make clean
 ```
 
-Команды появятся в CEL-00004 и CEL-00023; до этого их нет.
+`make shots` появится в CEL-00023; остальное работает с CEL-00004.
 
-- raylib — через CMake `FetchContent` с зафиксированным тегом, собирается из исходников, без sudo.
-  Предупреждения raylib не считаются ошибками; `-Werror` — только для нашего кода.
+- raylib **6.2** — `cmake/raylib.cmake`, `FetchContent` архива тега, собирается из исходников
+  (~15 с на 14 ядрах), без sudo. Предупреждения raylib не считаются ошибками; `-Werror` — только
+  для нашего кода (функция `ce_strict` в `CMakeLists.txt`). Новая цель — не забыть `ce_strict`.
+- Сессия владельца — Wayland (XWayland `:0`); raylib/GLFW открывает окно, видеокарта Intel Mesa,
+  OpenGL 4.6. Агент может запускать игру сам (`timeout 3 ./build/circus_elephant`).
 - GoogleTest — `/usr/src/googletest`, если нет — `FetchContent`.
 - `clang-format` в системе нет: `python3 -m venv /tmp/cmk && /tmp/cmk/bin/pip install clang-format`,
   затем `make format CLANG_FORMAT=/tmp/cmk/bin/clang-format` (как в `dji_tello_cli`).
