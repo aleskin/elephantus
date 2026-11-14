@@ -2,6 +2,8 @@
 
 #include <array>
 #include <cstddef>
+#include <optional>
+#include <string_view>
 
 namespace ce::core
 {
@@ -14,6 +16,9 @@ enum class GameButton
 };
 
 inline constexpr std::size_t game_button_count = 2;
+
+// Names used in files: "two_legs", "jump".
+std::optional<GameButton> button_from_name(std::string_view name);
 
 // Which buttons are down right now, as read from the keyboard or a script.
 using ButtonsDown = std::array<bool, game_button_count>;

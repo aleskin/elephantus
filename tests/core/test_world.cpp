@@ -161,6 +161,21 @@ TEST(Game, GoesThroughLevelsToTheEnd)
     EXPECT_EQ(game.level_index(), 1u);
 }
 
+TEST(Game, JumpAfterTheLevelMovesOn)
+{
+    Game game{Campaign{{"a", "b"}}, loader({{"a", level(10.0, 10.0)}, {"b", level(20.0, 5.0)}})};
+    InputTracker tracker;
+    game.step(tracker.next(down(false, false)), dt);
+    ASSERT_EQ(game.phase(), GamePhase::LevelComplete);
+    game.step(tracker.next(down(true, false)), dt);
+    EXPECT_EQ(game.phase(), GamePhase::LevelComplete);
+    game.step(tracker.next(down(true, true)), dt);
+    EXPECT_EQ(game.phase(), GamePhase::Playing);
+    EXPECT_EQ(game.level_index(), 1u);
+    game.step(tracker.next(down(true, true)), dt);
+    EXPECT_EQ(game.level_index(), 1u);
+}
+
 TEST(Game, LevelInProgressStaysPlaying)
 {
     Game game{Campaign{{"a"}}, loader({{"a", level(10.0, 1.0)}})};

@@ -1,0 +1,25 @@
+# The first level right after the start: arena, the elephant at the start, the hoop ahead.
+# Buttons are pressed too: until CEL-00013 the elephant stands still, so both shots match.
+
+[shot]
+at = 0
+name = start
+
+[press]
+at = 0.5
+button = jump
+
+[release]
+at = 0.6
+button = jump
+
+[press]
+at = 0.8
+button = two_legs
+
+[shot]
+at = 1.0
+name = buttons
+
+[end]
+at = 1.0

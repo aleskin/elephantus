@@ -27,6 +27,7 @@ add_library(elephant_core STATIC
     src/core/world/fixed_step.cpp
     src/core/world/world.cpp
     src/core/game/game.cpp
+    src/core/script/script.cpp
 )
 target_include_directories(elephant_core PUBLIC src)
 ce_strict(elephant_core)
@@ -36,6 +37,7 @@ include(cmake/raylib.cmake)
 # The game: window, drawing, keyboard on top of the core.
 add_executable(circus_elephant
     src/app/main.cpp
+    src/app/script_run.cpp
     src/input/keyboard.cpp
     src/render/camera.cpp
     src/render/elephant_view.cpp
@@ -57,9 +59,11 @@ if(CE_BUILD_TESTS)
         tests/core/test_kv_file.cpp
         tests/core/test_level.cpp
         tests/core/test_world.cpp
+        tests/core/test_script.cpp
     )
     target_link_libraries(elephant_tests PRIVATE elephant_core GTest::gtest_main)
-    target_compile_definitions(elephant_tests PRIVATE CE_ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets")
+    target_compile_definitions(elephant_tests PRIVATE CE_ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets"
+        CE_SCRIPTS_DIR="${CMAKE_SOURCE_DIR}/tests/scripts")
     ce_strict(elephant_tests)
     include(GoogleTest)
     gtest_discover_tests(elephant_tests)

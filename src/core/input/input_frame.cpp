@@ -13,6 +13,19 @@ std::size_t index(GameButton button)
 
 } // namespace
 
+std::optional<GameButton> button_from_name(std::string_view name)
+{
+    if (name == "two_legs")
+    {
+        return GameButton::TwoLegs;
+    }
+    if (name == "jump")
+    {
+        return GameButton::Jump;
+    }
+    return std::nullopt;
+}
+
 bool InputFrame::pressed(GameButton button) const
 {
     return pressed_[index(button)];

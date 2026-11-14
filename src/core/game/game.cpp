@@ -49,6 +49,12 @@ const World& Game::world() const
 
 std::vector<Event> Game::step(const InputFrame& input, double dt)
 {
+    if (phase_ == GamePhase::LevelComplete && input.pressed(GameButton::Jump))
+    {
+        // TODO(CEL-00012): what happens after a level is Polina's call; for now Jump moves on.
+        next_level();
+        return {};
+    }
     if (phase_ != GamePhase::Playing)
     {
         return {};
