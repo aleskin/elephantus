@@ -1,0 +1,12 @@
+# Level 1: the circus arena.
+# Distances are in metres along the path; the level ends at x = length.
+# TODO(CEL-00012): one hoop for the grey prototype; how many hoops and where - Polina decides.
+
+[level]
+title = Circus Arena
+location = arena
+length = 30
+start = 2
+
+[hoop]
+x = 14

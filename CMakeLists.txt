@@ -20,6 +20,9 @@ endfunction()
 add_library(elephant_core STATIC
     src/core/game_info.cpp
     src/core/text/kv_file.cpp
+    src/core/objects/hoop.cpp
+    src/core/objects/level_object.cpp
+    src/core/level/level.cpp
 )
 target_include_directories(elephant_core PUBLIC src)
 ce_strict(elephant_core)
@@ -29,6 +32,10 @@ include(cmake/raylib.cmake)
 # The game: window, drawing, keyboard on top of the core.
 add_executable(circus_elephant
     src/app/main.cpp
+    src/render/camera.cpp
+    src/render/object_views.cpp
+    src/render/locations/registry.cpp
+    src/render/locations/arena.cpp
 )
 target_link_libraries(circus_elephant PRIVATE elephant_core raylib)
 ce_strict(circus_elephant)
@@ -41,8 +48,10 @@ if(CE_BUILD_TESTS)
     add_executable(elephant_tests
         tests/core/test_game_info.cpp
         tests/core/test_kv_file.cpp
+        tests/core/test_level.cpp
     )
     target_link_libraries(elephant_tests PRIVATE elephant_core GTest::gtest_main)
+    target_compile_definitions(elephant_tests PRIVATE CE_ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets")
     ce_strict(elephant_tests)
     include(GoogleTest)
     gtest_discover_tests(elephant_tests)

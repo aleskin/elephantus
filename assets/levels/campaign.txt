@@ -1,0 +1,4 @@
+# The order of levels. One [level] section per level, played top to bottom.
+
+[level]
+file = level_01.txt
