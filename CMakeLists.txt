@@ -19,6 +19,7 @@ endfunction()
 # Game core: rules, physics, levels. Pure C++, no raylib, no output.
 add_library(elephant_core STATIC
     src/core/game_info.cpp
+    src/core/text/kv_file.cpp
 )
 target_include_directories(elephant_core PUBLIC src)
 ce_strict(elephant_core)
@@ -39,6 +40,7 @@ if(CE_BUILD_TESTS)
 
     add_executable(elephant_tests
         tests/core/test_game_info.cpp
+        tests/core/test_kv_file.cpp
     )
     target_link_libraries(elephant_tests PRIVATE elephant_core GTest::gtest_main)
     ce_strict(elephant_tests)
