@@ -1,13 +1,17 @@
+#include "core/game/game.hpp"
 #include "core/game_info.hpp"
+#include "core/input/input_frame.hpp"
 #include "core/level/level.hpp"
-#include "render/camera.hpp"
+#include "core/world/fixed_step.hpp"
+#include "input/keyboard.hpp"
 #include "render/locations/location.hpp"
-#include "render/object_views.hpp"
+#include "render/scene.hpp"
 
 #include <raylib.h>
 
 #include <filesystem>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -34,14 +38,16 @@ fs::path find_assets(int argc, char** argv)
     return fs::path{GetApplicationDirectory()} / ".." / "assets";
 }
 
-const ce::render::LocationView& location_for(const ce::core::LevelData& level)
+// Loads a level and makes sure the game knows how to draw its place.
+ce::core::LevelData load_drawable_level(const fs::path& path)
 {
-    const ce::render::LocationView* view = ce::render::find_location(level.location);
-    if (view == nullptr)
+    ce::core::LevelData level = ce::core::load_level(path);
+    if (ce::render::find_location(level.location) == nullptr)
     {
-        throw std::runtime_error("no view for location '" + level.location + "'");
+        throw std::runtime_error(path.filename().string() + ": no view for location '" +
+                                 level.location + "'");
     }
-    return *view;
+    return level;
 }
 
 } // namespace
@@ -51,47 +57,58 @@ int main(int argc, char** argv)
     constexpr int window_width = 1280;
     constexpr int window_height = 720;
 
-    ce::core::LevelData level;
+    std::optional<ce::core::Game> game;
     try
     {
         const fs::path assets = find_assets(argc, argv);
-        const ce::core::Campaign campaign =
-            ce::core::load_campaign(assets / "levels" / "campaign.txt");
-        level = ce::core::load_level(campaign.levels.front());
-        location_for(level);
+        game.emplace(ce::core::load_campaign(assets / "levels" / "campaign.txt"),
+                     load_drawable_level);
     }
     catch (const std::exception& error)
     {
         std::cerr << "circus_elephant: " << error.what() << '\n';
         return 1;
     }
-    const ce::render::LocationView& location = location_for(level);
 
     const std::string title{ce::core::game_title()};
     SetConfigFlags(FLAG_MSAA_4X_HINT);
     InitWindow(window_width, window_height, title.c_str());
     SetTargetFPS(60);
 
-    // Until the world exists (CEL-00026): a still camera and a grey block at the start.
-    const float start_x = static_cast<float>(level.start_x);
-    const Camera3D camera = ce::render::side_camera(start_x + 6.0f);
-
-    while (!WindowShouldClose())
+    ce::core::FixedStep clock;
+    ce::core::InputTracker tracker;
+    int exit_code = 0;
+    while (!WindowShouldClose() && game->phase() != ce::core::GamePhase::CampaignComplete)
     {
-        BeginDrawing();
-        ClearBackground(Color{40, 40, 48, 255});
-        BeginMode3D(camera);
-        location.draw(level);
-        for (const ce::core::LevelObject& object : level.objects)
+        const int steps = clock.advance(GetFrameTime());
+        const ce::core::ButtonsDown down = ce::input::read_keyboard();
+        try
         {
-            ce::render::draw_object(object);
+            for (int i = 0; i < steps; ++i)
+            {
+                const ce::core::InputFrame frame = tracker.next(down);
+                game->step(frame, clock.dt());
+                // TODO(CEL-00012): what happens after a level is Polina's call; for now Jump
+                // moves on.
+                if (game->phase() == ce::core::GamePhase::LevelComplete &&
+                    frame.pressed(ce::core::GameButton::Jump))
+                {
+                    game->next_level();
+                }
+            }
         }
-        DrawCube(Vector3{start_x, 0.6f, 0.0f}, 1.6f, 1.2f, 1.0f, LIGHTGRAY);
-        DrawCubeWires(Vector3{start_x, 0.6f, 0.0f}, 1.6f, 1.2f, 1.0f, DARKGRAY);
-        EndMode3D();
+        catch (const std::exception& error)
+        {
+            std::cerr << "circus_elephant: " << error.what() << '\n';
+            exit_code = 1;
+            break;
+        }
+
+        BeginDrawing();
+        ce::render::draw_scene(game->world());
         EndDrawing();
     }
 
     CloseWindow();
-    return 0;
+    return exit_code;
 }
