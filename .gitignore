@@ -1,3 +1,6 @@
 .zenflow/
 .zenflow-attachments/
 inbox/
+
+# Build output
+build/
