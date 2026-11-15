@@ -1,5 +1,5 @@
-# The first level right after the start: arena, the elephant at the start, the hoop ahead.
-# Buttons are pressed too: until CEL-00013 the elephant stands still, so both shots match.
+# The first level right after the start: the elephant stands on four legs, the hoop is
+# ahead. Then A is held: the elephant gets up on two legs and walks.
 
 [shot]
 at = 0
@@ -7,19 +7,11 @@ name = start
 
 [press]
 at = 0.5
-button = jump
-
-[release]
-at = 0.6
-button = jump
-
-[press]
-at = 0.8
-button = two_legs
+button = a
 
 [shot]
-at = 1.0
-name = buttons
+at = 1.5
+name = walking
 
 [end]
-at = 1.0
+at = 1.5

@@ -28,7 +28,7 @@ GameButton button_of(const KvSection& section)
     if (!button)
     {
         throw KvError(section.find("button")->line,
-                      "unknown button '" + name + "', use two_legs or jump");
+                      "unknown button '" + name + "', use a, b, x or y");
     }
     return *button;
 }

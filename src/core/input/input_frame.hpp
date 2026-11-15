@@ -8,16 +8,19 @@
 namespace ce::core
 {
 
-// Buttons of the game, not keys. Which key is which button is decided in src/input/.
+// Buttons of the game, named like Polina names them: the A, B, X and Y of a Nintendo
+// controller. Which key or pad button is which is decided in src/input/.
 enum class GameButton
 {
-    TwoLegs,
-    Jump,
+    A,
+    B,
+    X,
+    Y,
 };
 
-inline constexpr std::size_t game_button_count = 2;
+inline constexpr std::size_t game_button_count = 4;
 
-// Names used in files: "two_legs", "jump".
+// Names used in files: "a", "b", "x", "y".
 std::optional<GameButton> button_from_name(std::string_view name);
 
 // Which buttons are down right now, as read from the keyboard or a script.

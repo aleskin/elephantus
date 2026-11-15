@@ -15,13 +15,21 @@ std::size_t index(GameButton button)
 
 std::optional<GameButton> button_from_name(std::string_view name)
 {
-    if (name == "two_legs")
+    if (name == "a")
     {
-        return GameButton::TwoLegs;
+        return GameButton::A;
     }
-    if (name == "jump")
+    if (name == "b")
     {
-        return GameButton::Jump;
+        return GameButton::B;
+    }
+    if (name == "x")
+    {
+        return GameButton::X;
+    }
+    if (name == "y")
+    {
+        return GameButton::Y;
     }
     return std::nullopt;
 }

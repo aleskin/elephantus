@@ -1,0 +1,43 @@
+# A good trick: on two legs up to the hoop, X then B, the salto goes through the hoop
+# without touching it, and the elephant walks on.
+# Start x = 2, speed 3 m/s, hoop at x = 14: the take-off at x = 12.9 puts the top of the
+# jump right at the hoop (with the numbers in core/settings/tunables.hpp).
+
+[press]
+at = 0.5
+button = a
+
+[press]
+at = 4.13
+button = x
+
+[release]
+at = 4.15
+button = x
+
+[press]
+at = 4.15
+button = b
+
+[release]
+at = 4.2
+button = b
+
+[shot]
+at = 4.25
+name = take_off
+
+[shot]
+at = 4.51
+name = in_the_hoop
+
+[shot]
+at = 4.75
+name = coming_down
+
+[shot]
+at = 5.3
+name = landed
+
+[end]
+at = 5.3

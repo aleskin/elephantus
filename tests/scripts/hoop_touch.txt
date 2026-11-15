@@ -1,0 +1,21 @@
+# No jump: the elephant walks into the hoop, touches it and falls; after a short pause
+# the level starts over.
+
+[press]
+at = 0.5
+button = a
+
+[shot]
+at = 4.7
+name = touched
+
+[release]
+at = 4.8
+button = a
+
+[shot]
+at = 6.0
+name = start_over
+
+[end]
+at = 6.0

@@ -14,13 +14,15 @@ namespace
 struct Binding
 {
     core::GameButton button;
-    std::array<int, 2> keys;
+    std::array<int, 1> keys;
 };
 
-// TODO(CEL-00008): temporary keys until Polina picks hers; later from the settings file.
+// Keys with the same letters as the buttons Polina names (SPEC.md, "Buttons").
 constexpr std::array<Binding, core::game_button_count> bindings = {{
-    {core::GameButton::TwoLegs, {KEY_LEFT_SHIFT, KEY_UP}},
-    {core::GameButton::Jump, {KEY_SPACE, KEY_RIGHT_CONTROL}},
+    {core::GameButton::A, {KEY_A}},
+    {core::GameButton::B, {KEY_B}},
+    {core::GameButton::X, {KEY_X}},
+    {core::GameButton::Y, {KEY_Y}},
 }};
 
 } // namespace

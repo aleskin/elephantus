@@ -20,10 +20,11 @@ LevelData first_level(const Campaign& campaign, const Game::LevelLoader& loader)
 
 } // namespace
 
-Game::Game(Campaign campaign, LevelLoader loader)
+Game::Game(Campaign campaign, LevelLoader loader, Tunables tunables)
     : campaign_(std::move(campaign))
     , loader_(std::move(loader))
-    , world_(first_level(campaign_, loader_))
+    , tunables_(tunables)
+    , world_(first_level(campaign_, loader_), tunables_)
 {
 }
 
@@ -49,10 +50,20 @@ const World& Game::world() const
 
 std::vector<Event> Game::step(const InputFrame& input, double dt)
 {
-    if (phase_ == GamePhase::LevelComplete && input.pressed(GameButton::Jump))
+    if (phase_ == GamePhase::LevelComplete && input.pressed(GameButton::A))
     {
-        // TODO(CEL-00012): what happens after a level is Polina's call; for now Jump moves on.
+        // TODO(CEL-00012): what happens after a level is Polina's call; for now A moves on.
         next_level();
+        return {};
+    }
+    if (phase_ == GamePhase::LevelFailed)
+    {
+        failed_for_ += dt;
+        if (failed_for_ >= tunables_.restart_delay)
+        {
+            world_ = World{world_.level(), tunables_};
+            phase_ = GamePhase::Playing;
+        }
         return {};
     }
     if (phase_ != GamePhase::Playing)
@@ -65,6 +76,11 @@ std::vector<Event> Game::step(const InputFrame& input, double dt)
         if (event.kind == EventKind::LevelFinished)
         {
             phase_ = GamePhase::LevelComplete;
+        }
+        if (event.kind == EventKind::Fell || event.kind == EventKind::HoopTouched)
+        {
+            phase_ = GamePhase::LevelFailed;
+            failed_for_ = 0.0;
         }
     }
     return events;
@@ -82,7 +98,7 @@ void Game::next_level()
         return;
     }
     ++level_index_;
-    world_ = World{loader_(campaign_.levels[level_index_])};
+    world_ = World{loader_(campaign_.levels[level_index_]), tunables_};
     phase_ = GamePhase::Playing;
 }
 

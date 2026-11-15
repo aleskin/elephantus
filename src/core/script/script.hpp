@@ -15,7 +15,7 @@ namespace ce::core
 //
 //   [press]            [release]          [shot]             [end]
 //   at = 0.5           at = 0.6           at = 1.0           at = 2.0
-//   button = jump      button = jump      name = landed
+//   button = a         button = a         name = landed
 //
 // Times are seconds from the start; they are turned into logic steps.
 struct ScriptAction
@@ -29,7 +29,7 @@ struct ScriptAction
 
     Kind kind = Kind::Shot;
     long step = 0;
-    GameButton button = GameButton::Jump;
+    GameButton button = GameButton::A;
     std::string name;
 };
 

@@ -1,0 +1,16 @@
+# A is let go while walking and no jump follows: the elephant falls on four legs.
+
+[press]
+at = 0.5
+button = a
+
+[release]
+at = 2.0
+button = a
+
+[shot]
+at = 2.6
+name = fallen
+
+[end]
+at = 2.6
