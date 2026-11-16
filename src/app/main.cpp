@@ -3,6 +3,7 @@
 #include "core/game_info.hpp"
 #include "core/input/input_frame.hpp"
 #include "core/level/level.hpp"
+#include "core/settings/config.hpp"
 #include "core/world/fixed_step.hpp"
 #include "input/keyboard.hpp"
 #include "render/locations/location.hpp"
@@ -90,13 +91,42 @@ ce::core::LevelData load_drawable_level(const fs::path& path)
     return level;
 }
 
-void play(ce::core::Game& game)
+// How long "config reloaded" stays on the screen, seconds.
+constexpr double reloaded_note_time = 2.0;
+
+// A line at the bottom of the screen about the game config: its error, or a short note
+// that new numbers are in use. raylib's built-in font has no Cyrillic, so English.
+void draw_config_note(const ce::core::ConfigWatcher& config, double since_reload)
+{
+    const int font = 20;
+    const int y = window_height - font - 10;
+    if (!config.error().empty())
+    {
+        const std::string text = "config: " + config.error();
+        DrawRectangle(0, y - 6, window_width, font + 12, Fade(BLACK, 0.7F));
+        DrawText(text.c_str(), 10, y, font, RED);
+    }
+    else if (since_reload < reloaded_note_time)
+    {
+        DrawText("config reloaded", 10, y, font, DARKGREEN);
+    }
+}
+
+void play(ce::core::Game& game, ce::core::ConfigWatcher& config)
 {
     ce::core::FixedStep clock;
     ce::core::InputTracker tracker;
+    double since_reload = reloaded_note_time;
     while (!WindowShouldClose() && game.phase() != ce::core::GamePhase::CampaignComplete)
     {
-        const int steps = clock.advance(GetFrameTime());
+        const double frame = GetFrameTime();
+        since_reload += frame;
+        if (config.poll(frame))
+        {
+            game.set_tunables(config.tunables());
+            since_reload = 0.0;
+        }
+        const int steps = clock.advance(frame);
         const ce::core::ButtonsDown down = ce::input::read_keyboard();
         for (int i = 0; i < steps; ++i)
         {
@@ -105,6 +135,7 @@ void play(ce::core::Game& game)
 
         BeginDrawing();
         ce::render::draw_scene(game.world());
+        draw_config_note(config, since_reload);
         EndDrawing();
     }
 }
@@ -116,9 +147,17 @@ int main(int argc, char** argv)
     try
     {
         const Options options = parse_options(argc, argv);
-        ce::core::Game game{
-            ce::core::load_campaign(find_assets(options) / "levels" / "campaign.txt"),
-            load_drawable_level};
+        const fs::path assets = find_assets(options);
+        // Scripts play with the numbers from the code, so the shots do not depend on the
+        // game config; the game itself watches assets/config.txt.
+        std::optional<ce::core::ConfigWatcher> config;
+        if (!options.script)
+        {
+            config.emplace(assets / "config.txt");
+        }
+        ce::core::Game game{ce::core::load_campaign(assets / "levels" / "campaign.txt"),
+                            load_drawable_level,
+                            config ? config->tunables() : ce::core::Tunables{}};
 
         const std::string title =
             std::string{ce::core::game_title()} + " " + std::string{ce::core::game_version()};
@@ -144,7 +183,7 @@ int main(int argc, char** argv)
             }
             else
             {
-                play(game);
+                play(game, *config);
             }
         }
         catch (...)

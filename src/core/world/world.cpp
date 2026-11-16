@@ -123,6 +123,12 @@ std::vector<Event> World::step(const InputFrame& input, double dt)
     return events;
 }
 
+void World::set_tunables(const Tunables& tunables)
+{
+    tunables_ = tunables;
+    salto_.set_window(tunables_.salto_window);
+}
+
 void World::walk(bool jump, bool a_held, double dt, std::vector<Event>& events)
 {
     elephant_.x += tunables_.walk_speed * dt;

@@ -19,6 +19,8 @@ public:
     // Part of the sequence is pressed and there is still time for the rest.
     bool pending() const;
     void reset();
+    // A new longest pause; a sequence already started keeps going.
+    void set_window(double window);
 
 private:
     std::vector<GameButton> sequence_;

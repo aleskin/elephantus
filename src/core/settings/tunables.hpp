@@ -3,8 +3,9 @@
 namespace ce::core
 {
 
-// All game numbers that are not decided yet, in one place. Later they come from the
-// "Polina's console" file (CEL-00021); until then these defaults are used.
+// All game numbers that are not decided yet, in one place. The game reads them from the
+// game config assets/config.txt (core/settings/config); these defaults are used for
+// missing keys and by the screenshot scripts, so the shots do not depend on the file.
 struct Tunables
 {
     // TODO(CEL-00031): walking speed on two legs, metres per second; tune with Polina.

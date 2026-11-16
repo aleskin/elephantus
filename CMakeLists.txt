@@ -35,6 +35,7 @@ add_library(elephant_core STATIC
     src/core/input/input_frame.cpp
     src/core/input/combo.cpp
     src/core/settings/tunables.cpp
+    src/core/settings/config.cpp
     src/core/world/fixed_step.cpp
     src/core/world/world.cpp
     src/core/game/game.cpp
@@ -72,6 +73,7 @@ if(CE_BUILD_TESTS)
         tests/core/test_level.cpp
         tests/core/test_world.cpp
         tests/core/test_combo.cpp
+        tests/core/test_config.cpp
         tests/core/test_script.cpp
     )
     target_link_libraries(elephant_tests PRIVATE elephant_core GTest::gtest_main)

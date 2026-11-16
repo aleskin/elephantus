@@ -36,6 +36,8 @@ public:
     std::vector<Event> step(const InputFrame& input, double dt);
     // From LevelComplete: the next level, or CampaignComplete after the last one.
     void next_level();
+    // New numbers from the game config, used right away and after every restart.
+    void set_tunables(const Tunables& tunables);
 
 private:
     Campaign campaign_;

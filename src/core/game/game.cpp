@@ -102,4 +102,10 @@ void Game::next_level()
     phase_ = GamePhase::Playing;
 }
 
+void Game::set_tunables(const Tunables& tunables)
+{
+    tunables_ = tunables;
+    world_.set_tunables(tunables_);
+}
+
 } // namespace ce::core

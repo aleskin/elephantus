@@ -50,6 +50,8 @@ public:
     bool failed() const;
 
     std::vector<Event> step(const InputFrame& input, double dt);
+    // New numbers from the game config; the elephant keeps its place and state.
+    void set_tunables(const Tunables& tunables);
 
 private:
     void walk(bool jump, bool a_held, double dt, std::vector<Event>& events);

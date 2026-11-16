@@ -63,6 +63,11 @@ bool Combo::pending() const
     return next_ > 0;
 }
 
+void Combo::set_window(double window)
+{
+    window_ = window;
+}
+
 void Combo::reset()
 {
     next_ = 0;
