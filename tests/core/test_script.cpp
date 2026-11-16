@@ -95,7 +95,7 @@ TEST(Script, BundledScriptsLoad)
 {
     const auto folder = std::filesystem::path{CE_SCRIPTS_DIR};
     int count = 0;
-    for (const auto& entry : std::filesystem::directory_iterator{folder})
+    for (const auto& entry : std::filesystem::recursive_directory_iterator{folder})
     {
         if (entry.path().extension() == ".txt")
         {

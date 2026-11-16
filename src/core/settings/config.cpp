@@ -1,6 +1,6 @@
 #include "core/settings/config.hpp"
 
-#include <array>
+#include <algorithm>
 #include <optional>
 #include <string_view>
 #include <system_error>
@@ -12,53 +12,24 @@ namespace ce::core
 namespace
 {
 
-struct Knob
+bool belongs_to_a_minigame(const std::string& section, std::span<const MinigameInfo> minigames)
 {
-    std::string_view section;
-    std::string_view key;
-    double Tunables::* value;
-};
-
-constexpr std::array<Knob, 6> knobs = {{
-    {"elephant", "walk_speed", &Tunables::walk_speed},
-    {"elephant", "jump_height", &Tunables::jump_height},
-    {"elephant", "gravity", &Tunables::gravity},
-    {"elephant", "fall_grace", &Tunables::fall_grace},
-    {"buttons", "salto_window", &Tunables::salto_window},
-    {"game", "restart_delay", &Tunables::restart_delay},
-}};
-
-const Knob* find_knob(std::string_view section, std::string_view key)
-{
-    for (const Knob& knob : knobs)
+    const std::size_t dot = section.find('.');
+    if (dot == std::string::npos)
     {
-        if (knob.section == section && knob.key == key)
-        {
-            return &knob;
-        }
+        return false;
     }
-    return nullptr;
-}
-
-bool known_section(std::string_view section)
-{
-    if (section == "pad")
-    {
-        return true;
-    }
-    for (const Knob& knob : knobs)
-    {
-        if (knob.section == section)
-        {
-            return true;
-        }
-    }
-    return false;
+    const std::string_view id = std::string_view{section}.substr(0, dot);
+    return std::any_of(minigames.begin(), minigames.end(),
+                       [id](const MinigameInfo& info)
+                       {
+                           return info.id == id;
+                       });
 }
 
 } // namespace
 
-GameConfig parse_config(const KvDocument& document)
+GameConfig parse_config(KvDocument document, std::span<const MinigameInfo> minigames)
 {
     GameConfig config;
     for (const KvSection& section : document.sections)
@@ -68,48 +39,48 @@ GameConfig parse_config(const KvDocument& document)
             if (!section.entries().empty())
             {
                 throw KvError(section.entries().front().line,
-                              "put keys under a section, e.g. [elephant]");
+                              "put keys under a section, e.g. [pad]");
             }
             continue;
         }
-        if (!known_section(section.name()))
+        if (section.name() == "pad")
         {
-            throw KvError(section.line(), "unknown section [" + section.name() + "]");
-        }
-        for (const KvEntry& entry : section.entries())
-        {
-            if (section.name() == "pad" && entry.key == "layout")
+            for (const KvEntry& entry : section.entries())
             {
+                if (entry.key != "layout")
+                {
+                    throw KvError(entry.line, "unknown key '" + entry.key + "' in [pad]");
+                }
                 const std::optional<PadLayout> layout = pad_layout_from_name(entry.value);
                 if (!layout)
                 {
                     throw KvError(entry.line, "layout must be nintendo or xbox");
                 }
                 config.pad_layout = *layout;
-                continue;
             }
-            const Knob* knob = find_knob(section.name(), entry.key);
-            if (knob == nullptr)
-            {
-                throw KvError(entry.line,
-                              "unknown key '" + entry.key + "' in [" + section.name() + "]");
-            }
-            const double value = parse_number(entry);
-            if (!(value > 0.0))
-            {
-                throw KvError(entry.line, entry.key + " must be above zero");
-            }
-            config.tunables.*(knob->value) = value;
+            continue;
+        }
+        if (!belongs_to_a_minigame(section.name(), minigames))
+        {
+            throw KvError(section.line(), "unknown section [" + section.name() + "]");
         }
     }
+    for (const MinigameInfo& info : minigames)
+    {
+        if (info.check_config != nullptr)
+        {
+            info.check_config(document);
+        }
+    }
+    config.document = std::move(document);
     return config;
 }
 
-GameConfig load_config(const std::filesystem::path& path)
+GameConfig load_config(const std::filesystem::path& path, std::span<const MinigameInfo> minigames)
 {
     try
     {
-        return parse_config(load_kv_file(path));
+        return parse_config(load_kv_file(path), minigames);
     }
     catch (const KvError& error)
     {
@@ -121,8 +92,10 @@ GameConfig load_config(const std::filesystem::path& path)
     }
 }
 
-ConfigWatcher::ConfigWatcher(std::filesystem::path path, double interval)
+ConfigWatcher::ConfigWatcher(std::filesystem::path path, std::vector<MinigameInfo> minigames,
+                             double interval)
     : path_(std::move(path))
+    , minigames_(std::move(minigames))
     , interval_(interval)
 {
     check();
@@ -156,7 +129,7 @@ bool ConfigWatcher::check()
     seen_ = written;
     try
     {
-        config_ = load_config(path_);
+        config_ = load_config(path_, minigames_);
         error_.clear();
         return true;
     }

@@ -54,6 +54,24 @@ bool valid_name(std::string_view name)
                        });
 }
 
+// A section name is one or more names joined by dots: [hoop], [circus.elephant].
+bool valid_section_name(std::string_view name)
+{
+    while (true)
+    {
+        const std::size_t dot = name.find('.');
+        if (!valid_name(name.substr(0, dot)))
+        {
+            return false;
+        }
+        if (dot == std::string_view::npos)
+        {
+            return true;
+        }
+        name.remove_prefix(dot + 1);
+    }
+}
+
 std::string where(const KvSection& section)
 {
     if (section.name().empty())
@@ -243,7 +261,7 @@ KvDocument parse_kv(std::string_view text)
                 throw KvError(line_number, "section must look like [name]");
             }
             const std::string_view name = trim(line.substr(1, line.size() - 2));
-            if (!valid_name(name))
+            if (!valid_section_name(name))
             {
                 throw KvError(line_number, "bad section name '" + std::string{name} + "'");
             }

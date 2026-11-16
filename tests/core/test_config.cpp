@@ -1,9 +1,11 @@
-#include "core/game/game.hpp"
 #include "core/input/combo.hpp"
 #include "core/input/input_frame.hpp"
+#include "core/minigames/circus/circus.hpp"
+#include "core/minigames/circus/game/game.hpp"
+#include "core/minigames/circus/settings/config.hpp"
+#include "core/minigames/circus/world/world.hpp"
 #include "core/settings/config.hpp"
 #include "core/text/kv_file.hpp"
-#include "core/world/world.hpp"
 
 #include <gtest/gtest.h>
 
@@ -12,33 +14,50 @@
 #include <fstream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 using ce::core::ButtonsDown;
-using ce::core::Campaign;
 using ce::core::Combo;
 using ce::core::ConfigWatcher;
-using ce::core::Game;
 using ce::core::GameButton;
 using ce::core::GameConfig;
 using ce::core::InputFrame;
 using ce::core::InputTracker;
 using ce::core::KvError;
-using ce::core::LevelData;
 using ce::core::load_config;
+using ce::core::MinigameInfo;
 using ce::core::PadLayout;
 using ce::core::parse_config;
 using ce::core::parse_kv;
-using ce::core::Tunables;
-using ce::core::World;
+using ce::core::circus::Campaign;
+using ce::core::circus::Game;
+using ce::core::circus::LevelData;
+using ce::core::circus::Tunables;
+using ce::core::circus::World;
 
 namespace fs = std::filesystem;
 
 namespace
 {
 
+std::vector<MinigameInfo> minigames()
+{
+    return {ce::core::circus::info};
+}
+
+GameConfig parse_game(std::string_view text)
+{
+    return parse_config(parse_kv(text), minigames());
+}
+
 Tunables parse(std::string_view text)
 {
-    return parse_config(parse_kv(text)).tunables;
+    return ce::core::circus::read_tunables(parse_game(text).document);
+}
+
+Tunables numbers(const ConfigWatcher& watcher)
+{
+    return ce::core::circus::read_tunables(watcher.config().document);
 }
 
 int error_line(std::string_view text)
@@ -129,14 +148,14 @@ TEST(Config, EmptyFileKeepsTheNumbersFromTheCode)
 
 TEST(Config, ReadsEveryNumber)
 {
-    const Tunables tunables = parse("[elephant]\n"
+    const Tunables tunables = parse("[circus.elephant]\n"
                                     "walk_speed = 4,5\n"
                                     "jump_height = 2\n"
                                     "gravity = 15\n"
                                     "fall_grace = 0.5\n"
-                                    "[buttons]\n"
+                                    "[circus.buttons]\n"
                                     "salto_window = 0.6\n"
-                                    "[game]\n"
+                                    "[circus.game]\n"
                                     "restart_delay = 2\n");
     EXPECT_DOUBLE_EQ(tunables.walk_speed, 4.5);
     EXPECT_DOUBLE_EQ(tunables.jump_height, 2.0);
@@ -148,27 +167,29 @@ TEST(Config, ReadsEveryNumber)
 
 TEST(Config, MissingKeyKeepsTheNumberFromTheCode)
 {
-    const Tunables tunables = parse("[elephant]\nwalk_speed = 5\n");
+    const Tunables tunables = parse("[circus.elephant]\nwalk_speed = 5\n");
     EXPECT_DOUBLE_EQ(tunables.walk_speed, 5.0);
     EXPECT_DOUBLE_EQ(tunables.gravity, Tunables{}.gravity);
 }
 
 TEST(Config, RejectsTyposAndBadNumbers)
 {
-    EXPECT_EQ(error_line("[elephant]\nwalk_sped = 5\n"), 2);
-    EXPECT_EQ(error_line("[elefant]\nwalk_speed = 5\n"), 1);
-    EXPECT_EQ(error_line("[game]\nwalk_speed = 5\n"), 2);
+    EXPECT_EQ(error_line("[circus.elephant]\nwalk_sped = 5\n"), 2);
+    EXPECT_EQ(error_line("[circus.elefant]\nwalk_speed = 5\n"), 1);
+    EXPECT_EQ(error_line("[circus.game]\nwalk_speed = 5\n"), 2);
     EXPECT_EQ(error_line("walk_speed = 5\n"), 1);
-    EXPECT_EQ(error_line("[elephant]\n\nwalk_speed = 0\n"), 3);
-    EXPECT_EQ(error_line("[elephant]\nwalk_speed = -1\n"), 2);
-    EXPECT_EQ(error_line("[elephant]\nwalk_speed = fast\n"), 2);
+    EXPECT_EQ(error_line("[elephant]\nwalk_speed = 5\n"), 1);
+    EXPECT_EQ(error_line("# another mini-game\n[ball.speed]\nfast = 1\n"), 2);
+    EXPECT_EQ(error_line("[circus.elephant]\n\nwalk_speed = 0\n"), 3);
+    EXPECT_EQ(error_line("[circus.elephant]\nwalk_speed = -1\n"), 2);
+    EXPECT_EQ(error_line("[circus.elephant]\nwalk_speed = fast\n"), 2);
 }
 
 TEST(Config, PadLayout)
 {
-    EXPECT_EQ(parse_config(parse_kv("")).pad_layout, PadLayout::Nintendo);
-    EXPECT_EQ(parse_config(parse_kv("[pad]\nlayout = xbox\n")).pad_layout, PadLayout::Xbox);
-    EXPECT_EQ(parse_config(parse_kv("[pad]\nlayout = nintendo\n")).pad_layout, PadLayout::Nintendo);
+    EXPECT_EQ(parse_game("").pad_layout, PadLayout::Nintendo);
+    EXPECT_EQ(parse_game("[pad]\nlayout = xbox\n").pad_layout, PadLayout::Xbox);
+    EXPECT_EQ(parse_game("[pad]\nlayout = nintendo\n").pad_layout, PadLayout::Nintendo);
     EXPECT_EQ(error_line("[pad]\nlayout = playstation\n"), 2);
     EXPECT_EQ(error_line("[pad]\nlayot = xbox\n"), 2);
 }
@@ -176,10 +197,10 @@ TEST(Config, PadLayout)
 TEST(Config, ErrorNamesTheFile)
 {
     TempConfig file{"error_name"};
-    file.write("[elephant]\ngravity = 0\n");
+    file.write("[circus.elephant]\ngravity = 0\n");
     try
     {
-        load_config(file.path());
+        load_config(file.path(), minigames());
         FAIL() << "expected an error";
     }
     catch (const KvError& error)
@@ -191,37 +212,37 @@ TEST(Config, ErrorNamesTheFile)
 
 TEST(Config, GameConfigInAssetsLoads)
 {
-    EXPECT_NO_THROW(load_config(fs::path{CE_ASSETS_DIR} / "config.txt"));
+    EXPECT_NO_THROW(load_config(fs::path{CE_ASSETS_DIR} / "config.txt", minigames()));
 }
 
 TEST(ConfigWatcher, LoadsTheFileAtOnce)
 {
     TempConfig file{"at_once"};
-    file.write("[elephant]\nwalk_speed = 5\n");
-    const ConfigWatcher watcher{file.path()};
+    file.write("[circus.elephant]\nwalk_speed = 5\n");
+    const ConfigWatcher watcher{file.path(), minigames()};
     EXPECT_TRUE(watcher.error().empty());
-    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 5.0);
+    EXPECT_DOUBLE_EQ(numbers(watcher).walk_speed, 5.0);
 }
 
 TEST(ConfigWatcher, MissingFileKeepsTheCodeNumbers)
 {
     TempConfig file{"missing"};
-    const ConfigWatcher watcher{file.path()};
+    const ConfigWatcher watcher{file.path(), minigames()};
     EXPECT_FALSE(watcher.error().empty());
-    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, Tunables{}.walk_speed);
+    EXPECT_DOUBLE_EQ(numbers(watcher).walk_speed, Tunables{}.walk_speed);
 }
 
 TEST(ConfigWatcher, PicksUpAChangeOncePerInterval)
 {
     TempConfig file{"interval"};
-    file.write("[elephant]\nwalk_speed = 5\n");
-    ConfigWatcher watcher{file.path(), 1.0};
+    file.write("[circus.elephant]\nwalk_speed = 5\n");
+    ConfigWatcher watcher{file.path(), minigames(), 1.0};
 
-    file.write("[elephant]\nwalk_speed = 6\n");
+    file.write("[circus.elephant]\nwalk_speed = 6\n");
     EXPECT_FALSE(watcher.poll(0.5));
-    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 5.0);
+    EXPECT_DOUBLE_EQ(numbers(watcher).walk_speed, 5.0);
     EXPECT_TRUE(watcher.poll(0.5));
-    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 6.0);
+    EXPECT_DOUBLE_EQ(numbers(watcher).walk_speed, 6.0);
 
     EXPECT_FALSE(watcher.poll(1.0));
 }
@@ -229,28 +250,28 @@ TEST(ConfigWatcher, PicksUpAChangeOncePerInterval)
 TEST(ConfigWatcher, BrokenFileKeepsTheLastGoodNumbers)
 {
     TempConfig file{"broken"};
-    file.write("[elephant]\nwalk_speed = 5\n");
-    ConfigWatcher watcher{file.path()};
+    file.write("[circus.elephant]\nwalk_speed = 5\n");
+    ConfigWatcher watcher{file.path(), minigames()};
 
-    file.write("[elephant]\nwalk_speed = zero\n");
+    file.write("[circus.elephant]\nwalk_speed = zero\n");
     EXPECT_FALSE(watcher.check());
-    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 5.0);
+    EXPECT_DOUBLE_EQ(numbers(watcher).walk_speed, 5.0);
     EXPECT_NE(watcher.error().find("line 2"), std::string::npos) << watcher.error();
 
-    file.write("[elephant]\nwalk_speed = 7\n");
+    file.write("[circus.elephant]\nwalk_speed = 7\n");
     EXPECT_TRUE(watcher.check());
     EXPECT_TRUE(watcher.error().empty());
-    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 7.0);
+    EXPECT_DOUBLE_EQ(numbers(watcher).walk_speed, 7.0);
 }
 
 TEST(ConfigWatcher, FileThatAppearsLaterIsLoaded)
 {
     TempConfig file{"later"};
-    ConfigWatcher watcher{file.path()};
-    file.write("[game]\nrestart_delay = 3\n");
+    ConfigWatcher watcher{file.path(), minigames()};
+    file.write("[circus.game]\nrestart_delay = 3\n");
     EXPECT_TRUE(watcher.check());
     EXPECT_TRUE(watcher.error().empty());
-    EXPECT_DOUBLE_EQ(watcher.config().tunables.restart_delay, 3.0);
+    EXPECT_DOUBLE_EQ(numbers(watcher).restart_delay, 3.0);
 }
 
 TEST(Combo, NewWindowKeepsTheStartedSequence)
@@ -296,12 +317,12 @@ TEST(Config, GameKeepsNewNumbersAfterARestart)
 
     InputTracker tracker;
     game.step(tracker.next(down("a")), 0.01);
-    for (int i = 0; i < 100 && game.phase() == ce::core::GamePhase::Playing; ++i)
+    for (int i = 0; i < 100 && game.phase() == ce::core::circus::GamePhase::Playing; ++i)
     {
         game.step(tracker.next(down("")), 0.01);
     }
-    ASSERT_EQ(game.phase(), ce::core::GamePhase::LevelFailed);
+    ASSERT_EQ(game.phase(), ce::core::circus::GamePhase::LevelFailed);
     game.step(tracker.next(down("")), 0.25);
-    EXPECT_EQ(game.phase(), ce::core::GamePhase::Playing);
+    EXPECT_EQ(game.phase(), ce::core::circus::GamePhase::Playing);
     EXPECT_DOUBLE_EQ(game.world().tunables().walk_speed, 5.0);
 }

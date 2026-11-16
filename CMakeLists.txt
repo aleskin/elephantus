@@ -29,18 +29,22 @@ endfunction()
 add_library(elephant_core STATIC
     src/core/game_info.cpp
     src/core/text/kv_file.cpp
-    src/core/objects/hoop.cpp
-    src/core/objects/level_object.cpp
-    src/core/level/level.cpp
     src/core/input/input_frame.cpp
     src/core/input/combo.cpp
     src/core/input/pad_layout.cpp
-    src/core/settings/tunables.cpp
+    src/core/party/minigame.cpp
     src/core/settings/config.cpp
-    src/core/world/fixed_step.cpp
-    src/core/world/world.cpp
-    src/core/game/game.cpp
+    src/core/time/fixed_step.cpp
     src/core/script/script.cpp
+    # Mini-game "circus": the elephant, hoops, levels.
+    src/core/minigames/circus/circus.cpp
+    src/core/minigames/circus/objects/hoop.cpp
+    src/core/minigames/circus/objects/level_object.cpp
+    src/core/minigames/circus/level/level.cpp
+    src/core/minigames/circus/settings/tunables.cpp
+    src/core/minigames/circus/settings/config.cpp
+    src/core/minigames/circus/world/world.cpp
+    src/core/minigames/circus/game/game.cpp
 )
 target_include_directories(elephant_core PUBLIC src)
 target_compile_definitions(elephant_core PRIVATE CE_VERSION="${CE_VERSION}")
@@ -52,14 +56,17 @@ include(cmake/raylib.cmake)
 add_executable(circus_elephant
     src/app/main.cpp
     src/app/script_run.cpp
+    src/app/minigames.cpp
     src/input/keyboard.cpp
     src/input/gamepad.cpp
     src/render/camera.cpp
-    src/render/elephant_view.cpp
-    src/render/scene.cpp
-    src/render/object_views.cpp
-    src/render/locations/registry.cpp
-    src/render/locations/arena.cpp
+    # Mini-game "circus".
+    src/render/minigames/circus/circus_play.cpp
+    src/render/minigames/circus/elephant_view.cpp
+    src/render/minigames/circus/scene.cpp
+    src/render/minigames/circus/object_views.cpp
+    src/render/minigames/circus/locations/registry.cpp
+    src/render/minigames/circus/locations/arena.cpp
 )
 target_link_libraries(circus_elephant PRIVATE elephant_core raylib)
 ce_strict(circus_elephant)
@@ -72,12 +79,14 @@ if(CE_BUILD_TESTS)
     add_executable(elephant_tests
         tests/core/test_game_info.cpp
         tests/core/test_kv_file.cpp
-        tests/core/test_level.cpp
-        tests/core/test_world.cpp
         tests/core/test_combo.cpp
         tests/core/test_config.cpp
         tests/core/test_pad_layout.cpp
+        tests/core/test_minigame.cpp
         tests/core/test_script.cpp
+        tests/core/minigames/circus/test_circus.cpp
+        tests/core/minigames/circus/test_level.cpp
+        tests/core/minigames/circus/test_world.cpp
     )
     target_link_libraries(elephant_tests PRIVATE elephant_core GTest::gtest_main)
     target_compile_definitions(elephant_tests PRIVATE CE_ASSETS_DIR="${CMAKE_SOURCE_DIR}/assets"

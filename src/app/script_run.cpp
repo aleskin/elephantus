@@ -2,8 +2,7 @@
 
 #include "core/input/input_frame.hpp"
 #include "core/script/script.hpp"
-#include "core/world/fixed_step.hpp"
-#include "render/scene.hpp"
+#include "core/time/fixed_step.hpp"
 
 #include <raylib.h>
 
@@ -16,10 +15,11 @@ namespace ce::app
 namespace
 {
 
-void save_frame(const core::World& world, RenderTexture2D target, const std::filesystem::path& path)
+void save_frame(const render::MinigamePlay& play, RenderTexture2D target,
+                const std::filesystem::path& path)
 {
     BeginTextureMode(target);
-    render::draw_scene(world);
+    play.draw();
     EndTextureMode();
 
     Image image = LoadImageFromTexture(target.texture);
@@ -34,7 +34,7 @@ void save_frame(const core::World& world, RenderTexture2D target, const std::fil
 
 } // namespace
 
-void run_script(core::Game& game, const std::filesystem::path& script_path,
+void run_script(render::MinigamePlay& play, const std::filesystem::path& script_path,
                 const std::filesystem::path& shots_dir)
 {
     const core::FixedStep clock;
@@ -49,10 +49,10 @@ void run_script(core::Game& game, const std::filesystem::path& script_path,
         for (; !player.done(); player.next())
         {
             const core::InputFrame frame = tracker.next(player.buttons());
-            game.step(frame, clock.dt());
+            play.game().step({&frame, 1}, clock.dt());
             for (const std::string& name : player.shots())
             {
-                save_frame(game.world(), target, shots_dir / (prefix + name + ".png"));
+                save_frame(play, target, shots_dir / (prefix + name + ".png"));
             }
         }
     }

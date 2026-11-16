@@ -106,8 +106,19 @@ TEST(KvFile, SyntaxErrorsReportLine)
     EXPECT_EQ(error_line("[level\n"), 1);
     EXPECT_EQ(error_line("[]\n"), 1);
     EXPECT_EQ(error_line("[two words]\n"), 1);
+    EXPECT_EQ(error_line("[circus.]\n"), 1);
+    EXPECT_EQ(error_line("[.elephant]\n"), 1);
+    EXPECT_EQ(error_line("[circus..elephant]\n"), 1);
     EXPECT_EQ(error_line("\n\n = value\n"), 3);
     EXPECT_EQ(error_line("[a]\nk = 1\nk = 2\n"), 3);
+}
+
+TEST(KvFile, SectionNamesMayHaveDots)
+{
+    const KvDocument doc = parse_kv("[circus.elephant]\nwalk_speed = 3\n");
+    ASSERT_NE(doc.first("circus.elephant"), nullptr);
+    EXPECT_DOUBLE_EQ(doc.first("circus.elephant")->number("walk_speed", 0.0), 3.0);
+    EXPECT_EQ(error_line("[a]\nwalk.speed = 3\n"), 2);
 }
 
 TEST(KvFile, SameKeyInDifferentSectionsIsFine)

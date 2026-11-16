@@ -1,19 +1,17 @@
+#include "app/minigames.hpp"
 #include "app/script_run.hpp"
-#include "core/game/game.hpp"
 #include "core/game_info.hpp"
 #include "core/input/input_frame.hpp"
-#include "core/level/level.hpp"
 #include "core/settings/config.hpp"
-#include "core/world/fixed_step.hpp"
+#include "core/time/fixed_step.hpp"
 #include "input/gamepad.hpp"
 #include "input/keyboard.hpp"
-#include "render/locations/location.hpp"
-#include "render/scene.hpp"
 
 #include <raylib.h>
 
 #include <filesystem>
 #include <iostream>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 #include <string>
@@ -27,10 +25,12 @@ namespace fs = std::filesystem;
 constexpr int window_width = 1280;
 constexpr int window_height = 720;
 
-// circus_elephant [--assets DIR] [--script FILE [--shots DIR]]
+// circus_elephant [--assets DIR] [--minigame ID] [--script FILE [--shots DIR]]
 struct Options
 {
     std::optional<fs::path> assets;
+    // TODO(CEL-00032): until there is a menu, the game starts this mini-game right away.
+    std::string minigame = "circus";
     std::optional<fs::path> script;
     fs::path shots = "build/shots";
 };
@@ -49,6 +49,10 @@ Options parse_options(int argc, char** argv)
         if (name == "--assets")
         {
             options.assets = value;
+        }
+        else if (name == "--minigame")
+        {
+            options.minigame = value.string();
         }
         else if (name == "--script")
         {
@@ -80,18 +84,6 @@ fs::path find_assets(const Options& options)
     return fs::path{GetApplicationDirectory()} / ".." / "assets";
 }
 
-// Loads a level and makes sure the game knows how to draw its place.
-ce::core::LevelData load_drawable_level(const fs::path& path)
-{
-    ce::core::LevelData level = ce::core::load_level(path);
-    if (ce::render::find_location(level.location) == nullptr)
-    {
-        throw std::runtime_error(path.filename().string() + ": no view for location '" +
-                                 level.location + "'");
-    }
-    return level;
-}
-
 // How long "config reloaded" stays on the screen, seconds.
 constexpr double reloaded_note_time = 2.0;
 
@@ -113,19 +105,19 @@ void draw_config_note(const ce::core::ConfigWatcher& config, double since_reload
     }
 }
 
-void play(ce::core::Game& game, ce::core::ConfigWatcher& config)
+void play(ce::render::MinigamePlay& minigame, ce::core::ConfigWatcher& config)
 {
     ce::core::FixedStep clock;
     ce::core::InputTracker tracker;
     double since_reload = reloaded_note_time;
     std::optional<std::string> pads;
-    while (!WindowShouldClose() && game.phase() != ce::core::GamePhase::CampaignComplete)
+    while (!WindowShouldClose() && minigame.game().outcome() == ce::core::MinigameOutcome::Playing)
     {
         const double frame = GetFrameTime();
         since_reload += frame;
         if (config.poll(frame))
         {
-            game.set_tunables(config.config().tunables);
+            minigame.game().apply_config(config.config().document);
             since_reload = 0.0;
         }
         const int steps = clock.advance(frame);
@@ -140,11 +132,12 @@ void play(ce::core::Game& game, ce::core::ConfigWatcher& config)
         ce::input::read_gamepads(config.config().pad_layout, down);
         for (int i = 0; i < steps; ++i)
         {
-            game.step(tracker.next(down), clock.dt());
+            const ce::core::InputFrame input = tracker.next(down);
+            minigame.game().step({&input, 1}, clock.dt());
         }
 
         BeginDrawing();
-        ce::render::draw_scene(game.world());
+        minigame.draw();
         draw_config_note(config, since_reload);
         EndDrawing();
     }
@@ -158,16 +151,22 @@ int main(int argc, char** argv)
     {
         const Options options = parse_options(argc, argv);
         const fs::path assets = find_assets(options);
+        const ce::app::MinigameModule* module = ce::app::find_minigame(options.minigame);
+        if (module == nullptr)
+        {
+            throw std::invalid_argument("unknown mini-game " + options.minigame);
+        }
         // Scripts play with the numbers from the code, so the shots do not depend on the
         // game config; the game itself watches assets/config.txt.
         std::optional<ce::core::ConfigWatcher> config;
         if (!options.script)
         {
-            config.emplace(assets / "config.txt");
+            config.emplace(assets / "config.txt", ce::app::minigame_infos());
         }
-        ce::core::Game game{ce::core::load_campaign(assets / "levels" / "campaign.txt"),
-                            load_drawable_level,
-                            config ? config->config().tunables : ce::core::Tunables{}};
+        // TODO(CEL-00046): one player until players can join with their own controllers.
+        const std::unique_ptr<ce::render::MinigamePlay> minigame =
+            module->start(assets, config ? config->config().document : ce::core::KvDocument{},
+                          ce::core::MinigameSetup{});
 
         const std::string title =
             std::string{ce::core::game_title()} + " " + std::string{ce::core::game_version()};
@@ -189,11 +188,11 @@ int main(int argc, char** argv)
         {
             if (options.script)
             {
-                ce::app::run_script(game, *options.script, options.shots);
+                ce::app::run_script(*minigame, *options.script, options.shots);
             }
             else
             {
-                play(game, *config);
+                play(*minigame, *config);
             }
         }
         catch (...)

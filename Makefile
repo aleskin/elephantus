@@ -20,15 +20,20 @@ test: build
 run: build
 	./$(BUILD_DIR)/circus_elephant
 
-# Scripted runs from tests/scripts/ -> PNG frames in $(BUILD_DIR)/shots/ (CEL-00023).
+# Scripted runs from tests/scripts/<mini-game>/ -> PNG frames in
+# $(BUILD_DIR)/shots/<mini-game>/ (CEL-00023).
 SHOTS_DIR ?= $(BUILD_DIR)/shots
 shots: build
-	@mkdir -p $(SHOTS_DIR)
-	@for script in tests/scripts/*.txt; do \
-		echo "shots: $$script"; \
-		./$(BUILD_DIR)/circus_elephant --script $$script --shots $(SHOTS_DIR) || exit 1; \
+	@for dir in tests/scripts/*/; do \
+		game=$$(basename $$dir); \
+		mkdir -p $(SHOTS_DIR)/$$game; \
+		for script in $$dir*.txt; do \
+			echo "shots: $$script"; \
+			./$(BUILD_DIR)/circus_elephant --minigame $$game --script $$script \
+				--shots $(SHOTS_DIR)/$$game || exit 1; \
+		done; \
 	done
-	@ls $(SHOTS_DIR)
+	@ls -R $(SHOTS_DIR)
 
 clean:
 	rm -rf $(BUILD_DIR)
