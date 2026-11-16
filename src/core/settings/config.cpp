@@ -1,6 +1,7 @@
 #include "core/settings/config.hpp"
 
 #include <array>
+#include <optional>
 #include <string_view>
 #include <system_error>
 #include <utility>
@@ -41,6 +42,10 @@ const Knob* find_knob(std::string_view section, std::string_view key)
 
 bool known_section(std::string_view section)
 {
+    if (section == "pad")
+    {
+        return true;
+    }
     for (const Knob& knob : knobs)
     {
         if (knob.section == section)
@@ -53,9 +58,9 @@ bool known_section(std::string_view section)
 
 } // namespace
 
-Tunables parse_tunables(const KvDocument& document)
+GameConfig parse_config(const KvDocument& document)
 {
-    Tunables tunables;
+    GameConfig config;
     for (const KvSection& section : document.sections)
     {
         if (section.name().empty())
@@ -73,6 +78,16 @@ Tunables parse_tunables(const KvDocument& document)
         }
         for (const KvEntry& entry : section.entries())
         {
+            if (section.name() == "pad" && entry.key == "layout")
+            {
+                const std::optional<PadLayout> layout = pad_layout_from_name(entry.value);
+                if (!layout)
+                {
+                    throw KvError(entry.line, "layout must be nintendo or xbox");
+                }
+                config.pad_layout = *layout;
+                continue;
+            }
             const Knob* knob = find_knob(section.name(), entry.key);
             if (knob == nullptr)
             {
@@ -84,17 +99,17 @@ Tunables parse_tunables(const KvDocument& document)
             {
                 throw KvError(entry.line, entry.key + " must be above zero");
             }
-            tunables.*(knob->value) = value;
+            config.tunables.*(knob->value) = value;
         }
     }
-    return tunables;
+    return config;
 }
 
-Tunables load_tunables(const std::filesystem::path& path)
+GameConfig load_config(const std::filesystem::path& path)
 {
     try
     {
-        return parse_tunables(load_kv_file(path));
+        return parse_config(load_kv_file(path));
     }
     catch (const KvError& error)
     {
@@ -141,7 +156,7 @@ bool ConfigWatcher::check()
     seen_ = written;
     try
     {
-        tunables_ = load_tunables(path_);
+        config_ = load_config(path_);
         error_.clear();
         return true;
     }
@@ -157,9 +172,9 @@ const std::filesystem::path& ConfigWatcher::path() const
     return path_;
 }
 
-const Tunables& ConfigWatcher::tunables() const
+const GameConfig& ConfigWatcher::config() const
 {
-    return tunables_;
+    return config_;
 }
 
 const std::string& ConfigWatcher::error() const

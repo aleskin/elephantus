@@ -19,13 +19,15 @@ using ce::core::Combo;
 using ce::core::ConfigWatcher;
 using ce::core::Game;
 using ce::core::GameButton;
+using ce::core::GameConfig;
 using ce::core::InputFrame;
 using ce::core::InputTracker;
 using ce::core::KvError;
 using ce::core::LevelData;
-using ce::core::load_tunables;
+using ce::core::load_config;
+using ce::core::PadLayout;
+using ce::core::parse_config;
 using ce::core::parse_kv;
-using ce::core::parse_tunables;
 using ce::core::Tunables;
 using ce::core::World;
 
@@ -36,7 +38,7 @@ namespace
 
 Tunables parse(std::string_view text)
 {
-    return parse_tunables(parse_kv(text));
+    return parse_config(parse_kv(text)).tunables;
 }
 
 int error_line(std::string_view text)
@@ -162,13 +164,22 @@ TEST(Config, RejectsTyposAndBadNumbers)
     EXPECT_EQ(error_line("[elephant]\nwalk_speed = fast\n"), 2);
 }
 
+TEST(Config, PadLayout)
+{
+    EXPECT_EQ(parse_config(parse_kv("")).pad_layout, PadLayout::Nintendo);
+    EXPECT_EQ(parse_config(parse_kv("[pad]\nlayout = xbox\n")).pad_layout, PadLayout::Xbox);
+    EXPECT_EQ(parse_config(parse_kv("[pad]\nlayout = nintendo\n")).pad_layout, PadLayout::Nintendo);
+    EXPECT_EQ(error_line("[pad]\nlayout = playstation\n"), 2);
+    EXPECT_EQ(error_line("[pad]\nlayot = xbox\n"), 2);
+}
+
 TEST(Config, ErrorNamesTheFile)
 {
     TempConfig file{"error_name"};
     file.write("[elephant]\ngravity = 0\n");
     try
     {
-        load_tunables(file.path());
+        load_config(file.path());
         FAIL() << "expected an error";
     }
     catch (const KvError& error)
@@ -180,7 +191,7 @@ TEST(Config, ErrorNamesTheFile)
 
 TEST(Config, GameConfigInAssetsLoads)
 {
-    EXPECT_NO_THROW(load_tunables(fs::path{CE_ASSETS_DIR} / "config.txt"));
+    EXPECT_NO_THROW(load_config(fs::path{CE_ASSETS_DIR} / "config.txt"));
 }
 
 TEST(ConfigWatcher, LoadsTheFileAtOnce)
@@ -189,7 +200,7 @@ TEST(ConfigWatcher, LoadsTheFileAtOnce)
     file.write("[elephant]\nwalk_speed = 5\n");
     const ConfigWatcher watcher{file.path()};
     EXPECT_TRUE(watcher.error().empty());
-    EXPECT_DOUBLE_EQ(watcher.tunables().walk_speed, 5.0);
+    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 5.0);
 }
 
 TEST(ConfigWatcher, MissingFileKeepsTheCodeNumbers)
@@ -197,7 +208,7 @@ TEST(ConfigWatcher, MissingFileKeepsTheCodeNumbers)
     TempConfig file{"missing"};
     const ConfigWatcher watcher{file.path()};
     EXPECT_FALSE(watcher.error().empty());
-    EXPECT_DOUBLE_EQ(watcher.tunables().walk_speed, Tunables{}.walk_speed);
+    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, Tunables{}.walk_speed);
 }
 
 TEST(ConfigWatcher, PicksUpAChangeOncePerInterval)
@@ -208,9 +219,9 @@ TEST(ConfigWatcher, PicksUpAChangeOncePerInterval)
 
     file.write("[elephant]\nwalk_speed = 6\n");
     EXPECT_FALSE(watcher.poll(0.5));
-    EXPECT_DOUBLE_EQ(watcher.tunables().walk_speed, 5.0);
+    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 5.0);
     EXPECT_TRUE(watcher.poll(0.5));
-    EXPECT_DOUBLE_EQ(watcher.tunables().walk_speed, 6.0);
+    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 6.0);
 
     EXPECT_FALSE(watcher.poll(1.0));
 }
@@ -223,13 +234,13 @@ TEST(ConfigWatcher, BrokenFileKeepsTheLastGoodNumbers)
 
     file.write("[elephant]\nwalk_speed = zero\n");
     EXPECT_FALSE(watcher.check());
-    EXPECT_DOUBLE_EQ(watcher.tunables().walk_speed, 5.0);
+    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 5.0);
     EXPECT_NE(watcher.error().find("line 2"), std::string::npos) << watcher.error();
 
     file.write("[elephant]\nwalk_speed = 7\n");
     EXPECT_TRUE(watcher.check());
     EXPECT_TRUE(watcher.error().empty());
-    EXPECT_DOUBLE_EQ(watcher.tunables().walk_speed, 7.0);
+    EXPECT_DOUBLE_EQ(watcher.config().tunables.walk_speed, 7.0);
 }
 
 TEST(ConfigWatcher, FileThatAppearsLaterIsLoaded)
@@ -239,7 +250,7 @@ TEST(ConfigWatcher, FileThatAppearsLaterIsLoaded)
     file.write("[game]\nrestart_delay = 3\n");
     EXPECT_TRUE(watcher.check());
     EXPECT_TRUE(watcher.error().empty());
-    EXPECT_DOUBLE_EQ(watcher.tunables().restart_delay, 3.0);
+    EXPECT_DOUBLE_EQ(watcher.config().tunables.restart_delay, 3.0);
 }
 
 TEST(Combo, NewWindowKeepsTheStartedSequence)

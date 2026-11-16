@@ -5,6 +5,7 @@
 #include "core/level/level.hpp"
 #include "core/settings/config.hpp"
 #include "core/world/fixed_step.hpp"
+#include "input/gamepad.hpp"
 #include "input/keyboard.hpp"
 #include "render/locations/location.hpp"
 #include "render/scene.hpp"
@@ -117,17 +118,26 @@ void play(ce::core::Game& game, ce::core::ConfigWatcher& config)
     ce::core::FixedStep clock;
     ce::core::InputTracker tracker;
     double since_reload = reloaded_note_time;
+    std::optional<std::string> pads;
     while (!WindowShouldClose() && game.phase() != ce::core::GamePhase::CampaignComplete)
     {
         const double frame = GetFrameTime();
         since_reload += frame;
         if (config.poll(frame))
         {
-            game.set_tunables(config.tunables());
+            game.set_tunables(config.config().tunables);
             since_reload = 0.0;
         }
         const int steps = clock.advance(frame);
-        const ce::core::ButtonsDown down = ce::input::read_keyboard();
+        const std::string now_pads = ce::input::gamepad_names();
+        if (!pads || now_pads != *pads)
+        {
+            pads = now_pads;
+            std::cout << "circus_elephant: gamepads: " << (now_pads.empty() ? "none" : now_pads)
+                      << std::endl;
+        }
+        ce::core::ButtonsDown down = ce::input::read_keyboard();
+        ce::input::read_gamepads(config.config().pad_layout, down);
         for (int i = 0; i < steps; ++i)
         {
             game.step(tracker.next(down), clock.dt());
@@ -157,7 +167,7 @@ int main(int argc, char** argv)
         }
         ce::core::Game game{ce::core::load_campaign(assets / "levels" / "campaign.txt"),
                             load_drawable_level,
-                            config ? config->tunables() : ce::core::Tunables{}};
+                            config ? config->config().tunables : ce::core::Tunables{}};
 
         const std::string title =
             std::string{ce::core::game_title()} + " " + std::string{ce::core::game_version()};
