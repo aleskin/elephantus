@@ -306,6 +306,17 @@ std::string pad_button_label(PadButton button, PadLayout layout)
     return std::string{pad_buttons[static_cast<std::size_t>(button)].label};
 }
 
+ButtonLabels control_labels(const Controls& controls, bool gamepad, PadLayout layout)
+{
+    ButtonLabels labels;
+    for (std::size_t i = 0; i < game_button_count; ++i)
+    {
+        labels[i] = gamepad ? pad_button_label(controls.buttons[i].pad, layout)
+                            : key_label(controls.buttons[i].key);
+    }
+    return labels;
+}
+
 Controls parse_controls(const KvDocument& document, PadLayout layout)
 {
     Controls controls = default_controls(layout);

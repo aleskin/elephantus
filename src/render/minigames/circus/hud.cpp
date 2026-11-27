@@ -4,7 +4,10 @@
 
 #include <raylib.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <string>
+#include <string_view>
 
 namespace ce::render::circus
 {
@@ -18,16 +21,23 @@ constexpr Color button_colour{250, 204, 80, 255};
 constexpr Color good_colour{120, 230, 120, 255};
 constexpr Color bad_colour{255, 110, 100, 255};
 
-// A round game button with its letter; returns the x right after it.
-int draw_button(char letter, int x, int y)
+// A key or gamepad button as a yellow chip with its name; returns the x right after it.
+int draw_button(const std::string& label, int x, int y)
 {
-    const int radius = 18;
-    DrawCircle(x + radius, y + radius, static_cast<float>(radius), button_colour);
-    const char text[2] = {letter, '\0'};
     const int size = 24;
-    draw_text(text, x + radius - measure_text(text, size) / 2, y + radius - size / 2 - 1, size,
-              BLACK);
-    return x + 2 * radius + 8;
+    const int height = 36;
+    const int width = std::max(height, measure_text(label, size) + 20);
+    DrawRectangleRounded({static_cast<float>(x), static_cast<float>(y), static_cast<float>(width),
+                          static_cast<float>(height)},
+                         0.5F, 8, button_colour);
+    draw_text(label, x + (width - measure_text(label, size)) / 2, y + height / 2 - size / 2 - 1,
+              size, BLACK);
+    return x + width + 8;
+}
+
+const std::string& label_of(const core::ButtonLabels& labels, core::GameButton button)
+{
+    return labels[static_cast<std::size_t>(button)];
 }
 
 int draw_words(const char* words, int x, int y)
@@ -37,7 +47,7 @@ int draw_words(const char* words, int x, int y)
     return x + measure_text(words, size) + 10;
 }
 
-void draw_big_centred(const char* text, int y, Color colour)
+void draw_big_centred(std::string_view text, int y, Color colour)
 {
     const int size = 64;
     const int width = measure_text(text, size);
@@ -50,7 +60,7 @@ void draw_big_centred(const char* text, int y, Color colour)
 
 } // namespace
 
-void draw_hud(const core::circus::Game& game)
+void draw_hud(const core::circus::Game& game, const core::ButtonLabels& labels)
 {
     const int width = GetScreenWidth();
 
@@ -66,12 +76,12 @@ void draw_hud(const core::circus::Game& game)
     DrawRectangle(0, y - 12, width, 64, panel);
     int x = 24;
     x = draw_words("держи", x, y);
-    x = draw_button('A', x, y);
+    x = draw_button(label_of(labels, core::GameButton::A), x, y);
     x = draw_words("— идти на двух ногах", x, y);
     x += 40;
-    x = draw_button('X', x, y);
+    x = draw_button(label_of(labels, core::GameButton::X), x, y);
     x = draw_words("потом", x, y);
-    x = draw_button('B', x, y);
+    x = draw_button(label_of(labels, core::GameButton::B), x, y);
     draw_words("— прыжок с сальтухой", x, y);
 
     switch (game.phase())
@@ -79,15 +89,19 @@ void draw_hud(const core::circus::Game& game)
     case core::circus::GamePhase::Playing:
         if (game.world().elephant().state == core::circus::ElephantState::Standing)
         {
-            draw_big_centred("Держи A!", 150, button_colour);
+            const std::string hold = "Держи " + label_of(labels, core::GameButton::A) + "!";
+            draw_big_centred(hold, 150, button_colour);
         }
         break;
     case core::circus::GamePhase::LevelFailed:
         draw_big_centred("Ой! Ещё разок…", 150, bad_colour);
         break;
     case core::circus::GamePhase::LevelComplete:
-        draw_big_centred("Браво! Нажми A", 150, good_colour);
+    {
+        const std::string next = "Браво! Нажми " + label_of(labels, core::GameButton::A);
+        draw_big_centred(next, 150, good_colour);
         break;
+    }
     case core::circus::GamePhase::CampaignComplete:
         break;
     }

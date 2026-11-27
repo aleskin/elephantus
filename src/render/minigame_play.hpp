@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/input/controls.hpp"
 #include "core/party/minigame.hpp"
 #include "sound/cue.hpp"
 
@@ -19,8 +20,9 @@ public:
     virtual ~MinigamePlay() = default;
 
     virtual core::Minigame& game() = 0;
-    // The whole frame, between BeginDrawing/EndDrawing or into a render texture.
-    virtual void draw() const = 0;
+    // The whole frame, between BeginDrawing/EndDrawing or into a render texture. `labels`
+    // are the keys or gamepad buttons of the game buttons, for the hints.
+    virtual void draw(const core::ButtonLabels& labels) const = 0;
     // The sounds for what happened since the last call.
     virtual std::vector<sound::Cue> take_cues() = 0;
 };

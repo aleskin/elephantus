@@ -8,6 +8,8 @@
 #include <optional>
 
 using ce::core::action_name;
+using ce::core::ButtonLabels;
+using ce::core::control_labels;
 using ce::core::Controls;
 using ce::core::default_controls;
 using ce::core::format_controls;
@@ -139,4 +141,19 @@ TEST(UserFiles, WriteCreatesFoldersAndReplacesTheFile)
     EXPECT_THROW(load_controls(file, PadLayout::Nintendo), KvError);
     EXPECT_FALSE(std::filesystem::exists(file.string() + ".tmp"));
     std::filesystem::remove_all(dir);
+}
+
+TEST(Controls, LabelsFollowTheBindingsAndTheDevice)
+{
+    Controls controls = default_controls(PadLayout::Nintendo);
+    const ButtonLabels keyboard = control_labels(controls, false, PadLayout::Nintendo);
+    EXPECT_EQ(keyboard[0], "A");
+    EXPECT_EQ(keyboard[2], "Влево");
+    EXPECT_EQ(keyboard[1], "Вправо");
+    const ButtonLabels pad = control_labels(controls, true, PadLayout::Nintendo);
+    EXPECT_EQ(pad[0], "Крестовина вправо");
+    EXPECT_EQ(pad[2], "X");
+    EXPECT_EQ(pad[1], "B");
+    controls[GameButton::A].key = keys::up;
+    EXPECT_EQ(control_labels(controls, false, PadLayout::Nintendo)[0], "Вверх");
 }

@@ -244,6 +244,8 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
     std::optional<ce::core::Controls> saved_controls =
         load_saved_controls(config.config().pad_layout);
     std::optional<ce::core::ControlsMenu> controls_menu;
+    // The hints show gamepad buttons after a gamepad button, keys after a key.
+    bool hint_gamepad = false;
     while (!WindowShouldClose() && flow.screen() != Screen::Quit)
     {
         const double frame = GetFrameTime();
@@ -261,7 +263,20 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
         const ce::core::Controls controls =
             saved_controls.value_or(ce::core::default_controls(config.config().pad_layout));
         ce::core::ButtonsDown down = ce::input::read_keyboard(controls);
-        ce::input::read_gamepads(controls, down);
+        ce::core::ButtonsDown pad_down{};
+        ce::input::read_gamepads(controls, pad_down);
+        if (any_down(pad_down))
+        {
+            hint_gamepad = true;
+        }
+        else if (any_down(down) || (pads && pads->empty()))
+        {
+            hint_gamepad = false;
+        }
+        for (std::size_t i = 0; i < down.size(); ++i)
+        {
+            down[i] = down[i] || pad_down[i];
+        }
         const ce::core::MenuInput menu_input =
             menu.next(ce::input::read_menu_buttons(config.config().pad_layout));
 
@@ -372,7 +387,8 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
         case Screen::Minigame:
             if (running)
             {
-                running->draw();
+                running->draw(
+                    ce::core::control_labels(controls, hint_gamepad, config.config().pad_layout));
             }
             break;
         case Screen::Quit:

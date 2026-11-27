@@ -1,5 +1,6 @@
 #include "app/script_run.hpp"
 
+#include "core/input/controls.hpp"
 #include "core/input/input_frame.hpp"
 #include "core/script/script.hpp"
 #include "core/time/fixed_step.hpp"
@@ -19,7 +20,8 @@ void save_frame(const render::MinigamePlay& play, RenderTexture2D target,
                 const std::filesystem::path& path)
 {
     BeginTextureMode(target);
-    play.draw();
+    play.draw(core::control_labels(core::default_controls(core::PadLayout::Nintendo), false,
+                                   core::PadLayout::Nintendo));
     EndTextureMode();
 
     Image image = LoadImageFromTexture(target.texture);

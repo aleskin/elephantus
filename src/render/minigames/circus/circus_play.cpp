@@ -62,10 +62,10 @@ public:
         return game_;
     }
 
-    void draw() const override
+    void draw(const core::ButtonLabels& labels) const override
     {
         draw_scene(game_.game().world());
-        draw_hud(game_.game());
+        draw_hud(game_.game(), labels);
     }
 
     std::vector<sound::Cue> take_cues() override

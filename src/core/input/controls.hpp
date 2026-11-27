@@ -89,6 +89,11 @@ std::optional<PadButton> pad_button_from_name(std::string_view name);
 std::string key_label(int key);
 std::string pad_button_label(PadButton button, PadLayout layout);
 
+// What to write on the screen for each game button: its key, or its gamepad button when the
+// player uses a gamepad.
+using ButtonLabels = std::array<std::string, game_button_count>;
+ButtonLabels control_labels(const Controls& controls, bool gamepad, PadLayout layout);
+
 // Controls file: one section per game button, [a] keyboard = a, gamepad = dpad_right.
 // Missing sections or keys keep the defaults; unknown names are an error (KvError).
 Controls parse_controls(const KvDocument& document, PadLayout layout);
