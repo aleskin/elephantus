@@ -230,7 +230,8 @@ make clean
 
 **Агент сам смотрит игру (CEL-00023).** `make shots` прогоняет каждый сценарий из
 `tests/scripts/<мини-игра>/*.txt` в скрытом окне с фиксированным шагом и сохраняет снимки
-`build/shots/<мини-игра>/<сценарий>_<снимок>.png` — агент открывает их и пишет в отчёте, что видно. Один и тот
+`build/shots/<мини-игра>/<сценарий>_<снимок>.png`, а экраны меню — в `build/shots/screens/`
+(`--screens DIR`) — агент открывает их и пишет в отчёте, что видно. Один и тот
 же сценарий всегда даёт одинаковые снимки. Формат сценария — `[press]`/`[release]` (`at` в
 секундах, `button = a | b | x | y`), `[shot]` (`at`, `name`), `[end]` (`at`); описан в
 `src/core/script/script.hpp`. Запуск вручную: `./build/circus_elephant --minigame circus --script FILE --shots DIR`.
@@ -298,7 +299,8 @@ src/core/                  elephant_core — чистый C++20, без raylib, 
   settings/                config — конфиг игры: [pad] + секции мини-игр, слежение за assets/config.txt
   input/                   кнопки игры A/B/X/Y (GameButton), InputFrame, комбинации нажатий (Combo), раскладка джойстика (PadLayout)
   time/                    фиксированный шаг логики (FixedStep)
-  party/                   общее для всех мини-игр: Minigame, MinigameInfo, игроки (до 4), PlayStyle
+  party/                   общее для всех мини-игр: Minigame, MinigameInfo, игроки (до 4), PlayStyle;
+                           flow — ход по экранам (заставка, меню, список, мини-игра), кнопки меню
   script/                  сценарии нажатий и снимков для make shots (CEL-00023)
   minigames/circus/        мини-игра «Цирковой слоник», ce::core::circus
     circus                 CircusMinigame (Minigame поверх Game) и info: id "circus", по очереди
@@ -311,14 +313,16 @@ src/core/                  elephant_core — чистый C++20, без raylib, 
 src/render/                raylib: рисование
   camera                   камера сбоку, следует по x
   minigame_play            MinigamePlay — запущенная мини-игра: правила + как её рисовать
+  screens/                 экраны вокруг мини-игр, один файл на экран: title, main_menu, minigame_list
   minigames/circus/        ce::render::circus
     circus_play            start(): загрузка уровней, CircusMinigame, draw_scene
     scene                  кадр: место, предметы, слоник
     elephant_view          как выглядит слоник (примитивы сейчас, .glb потом)
     object_views           как выглядят предметы
     locations/             одно место — один файл: arena, позже street, …; реестр по имени
-src/input/                 клавиатура (A/B/X/Y) и джойстики (raylib) → ButtonsDown, раскладка из конфига
-src/app/                   main, главный цикл, параметры запуска, сценарии и скриншоты
+src/input/                 клавиатура (A/B/X/Y) и джойстики (raylib) → ButtonsDown, раскладка из конфига;
+                           menu — кнопки меню (стрелки, A/B, Esc/Start — выйти из мини-игры)
+src/app/                   main, главный цикл, параметры запуска, сценарии и скриншоты (screen_shots — экраны меню)
   minigames                реестр мини-игр: id → info + start
 assets/                    config.txt (конфиг игры), позже fonts/, models/ (.glb), textures/, sounds/
 assets/minigames/circus/levels/  campaign.txt (порядок уровней), level_01.txt, …
@@ -338,8 +342,8 @@ tests/scripts/<id>/        сценарии нажатий мини-игры д�
 (id, имя для меню, по очереди или вместе, `check_config` своих секций `[<id>.…]`);
 `src/render/minigames/<id>/` — класс от `render::MinigamePlay` и функция `start`; одна строка в
 реестре `src/app/minigames.cpp`; файлы в `CMakeLists.txt`; данные — `assets/minigames/<id>/`,
-тесты — `tests/core/minigames/<id>/`, сценарии — `tests/scripts/<id>/`. Пока нет меню (CEL-00032),
-игра запускает мини-игру из `--minigame ID` (по умолчанию `circus`).
+тесты — `tests/core/minigames/<id>/`, сценарии — `tests/scripts/<id>/`. Мини-игра сама появляется
+в списке меню (порядок — как в реестре); `--minigame ID` — только для сценариев.
 
 **Координаты и единицы.** Метры и секунды. x — вдоль пути (вправо), y — вверх. Глубины в логике
 нет — это и есть «движение в одной плоскости»; глубина только у картинки (декорации на разной

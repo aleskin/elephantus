@@ -21,7 +21,7 @@ run: build
 	./$(BUILD_DIR)/circus_elephant
 
 # Scripted runs from tests/scripts/<mini-game>/ -> PNG frames in
-# $(BUILD_DIR)/shots/<mini-game>/ (CEL-00023).
+# $(BUILD_DIR)/shots/<mini-game>/ (CEL-00023); menu screens -> $(BUILD_DIR)/shots/screens/.
 SHOTS_DIR ?= $(BUILD_DIR)/shots
 shots: build
 	@for dir in tests/scripts/*/; do \
@@ -33,6 +33,8 @@ shots: build
 				--shots $(SHOTS_DIR)/$$game || exit 1; \
 		done; \
 	done
+	@echo "shots: menu screens"
+	@./$(BUILD_DIR)/circus_elephant --screens $(SHOTS_DIR)/screens
 	@ls -R $(SHOTS_DIR)
 
 clean:

@@ -5,9 +5,9 @@
 #include <regex>
 #include <string>
 
-TEST(GameInfo, TitleIsCircusElephant)
+TEST(GameInfo, TitleIsElephantus)
 {
-    EXPECT_EQ(ce::core::game_title(), "Circus Elephant");
+    EXPECT_EQ(ce::core::game_title(), "Elephantus");
 }
 
 TEST(GameInfo, VersionIsMajorMinorPatchFromMakefileVersion)

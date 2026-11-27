@@ -5,7 +5,7 @@ namespace ce::core
 
 std::string_view game_title()
 {
-    return "Circus Elephant";
+    return "Elephantus";
 }
 
 std::string_view game_version()

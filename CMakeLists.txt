@@ -33,6 +33,7 @@ add_library(elephant_core STATIC
     src/core/input/combo.cpp
     src/core/input/pad_layout.cpp
     src/core/party/minigame.cpp
+    src/core/party/flow.cpp
     src/core/settings/config.cpp
     src/core/time/fixed_step.cpp
     src/core/script/script.cpp
@@ -56,10 +57,17 @@ include(cmake/raylib.cmake)
 add_executable(circus_elephant
     src/app/main.cpp
     src/app/script_run.cpp
+    src/app/screen_shots.cpp
     src/app/minigames.cpp
     src/input/keyboard.cpp
     src/input/gamepad.cpp
+    src/input/menu.cpp
     src/render/camera.cpp
+    # Screens around the mini-games.
+    src/render/screens/menu.cpp
+    src/render/screens/title.cpp
+    src/render/screens/main_menu.cpp
+    src/render/screens/minigame_list.cpp
     # Mini-game "circus".
     src/render/minigames/circus/circus_play.cpp
     src/render/minigames/circus/elephant_view.cpp
@@ -83,6 +91,7 @@ if(CE_BUILD_TESTS)
         tests/core/test_config.cpp
         tests/core/test_pad_layout.cpp
         tests/core/test_minigame.cpp
+        tests/core/test_flow.cpp
         tests/core/test_script.cpp
         tests/core/minigames/circus/test_circus.cpp
         tests/core/minigames/circus/test_level.cpp
