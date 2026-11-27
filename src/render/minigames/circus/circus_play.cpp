@@ -2,6 +2,7 @@
 
 #include "core/minigames/circus/circus.hpp"
 #include "core/minigames/circus/level/level.hpp"
+#include "render/minigames/circus/hud.hpp"
 #include "render/minigames/circus/locations/location.hpp"
 #include "render/minigames/circus/scene.hpp"
 
@@ -44,6 +45,7 @@ public:
     void draw() const override
     {
         draw_scene(game_.game().world());
+        draw_hud(game_.game());
     }
 
 private:

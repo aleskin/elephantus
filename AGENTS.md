@@ -317,6 +317,7 @@ src/render/                raylib: рисование
   minigames/circus/        ce::render::circus
     circus_play            start(): загрузка уровней, CircusMinigame, draw_scene
     scene                  кадр: место, предметы, слоник
+    hud                    надписи поверх: подсказка кнопок, номер уровня, «упал» / «пройден»
     elephant_view          как выглядит слоник (примитивы сейчас, .glb потом)
     object_views           как выглядят предметы
     locations/             одно место — один файл: arena, позже street, …; реестр по имени

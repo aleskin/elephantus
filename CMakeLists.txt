@@ -72,6 +72,7 @@ add_executable(circus_elephant
     src/render/minigames/circus/circus_play.cpp
     src/render/minigames/circus/elephant_view.cpp
     src/render/minigames/circus/scene.cpp
+    src/render/minigames/circus/hud.cpp
     src/render/minigames/circus/object_views.cpp
     src/render/minigames/circus/locations/registry.cpp
     src/render/minigames/circus/locations/arena.cpp
