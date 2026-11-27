@@ -41,6 +41,11 @@ const Game& CircusMinigame::game() const
     return game_;
 }
 
+std::vector<Event> CircusMinigame::take_events()
+{
+    return std::exchange(events_, {});
+}
+
 const MinigameInfo& CircusMinigame::info() const
 {
     return circus::info;
@@ -48,7 +53,9 @@ const MinigameInfo& CircusMinigame::info() const
 
 void CircusMinigame::step(std::span<const InputFrame> players, double dt)
 {
-    game_.step(players.empty() ? InputFrame{} : players.front(), dt);
+    const std::vector<Event> events =
+        game_.step(players.empty() ? InputFrame{} : players.front(), dt);
+    events_.insert(events_.end(), events.begin(), events.end());
 }
 
 MinigameOutcome CircusMinigame::outcome() const

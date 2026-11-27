@@ -76,6 +76,8 @@ add_executable(circus_elephant
     src/render/minigames/circus/object_views.cpp
     src/render/minigames/circus/locations/registry.cpp
     src/render/minigames/circus/locations/arena.cpp
+    # Sounds made in code.
+    src/sound/sounds.cpp
 )
 target_link_libraries(circus_elephant PRIVATE elephant_core raylib)
 ce_strict(circus_elephant)

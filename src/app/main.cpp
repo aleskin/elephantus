@@ -10,9 +10,11 @@
 #include "input/keyboard.hpp"
 #include "input/menu.hpp"
 #include "render/screens/screens.hpp"
+#include "sound/sounds.hpp"
 
 #include <raylib.h>
 
+#include <cstddef>
 #include <filesystem>
 #include <iostream>
 #include <memory>
@@ -139,10 +141,24 @@ bool any_down(const ce::core::ButtonsDown& down)
     return false;
 }
 
+void play_menu_sound(ce::sound::Sounds& sounds, const ce::core::MenuInput& input,
+                     bool screen_changed, bool cursor_moved)
+{
+    if (screen_changed)
+    {
+        sounds.play(input.back ? ce::sound::Cue::MenuBack : ce::sound::Cue::MenuSelect);
+    }
+    else if (cursor_moved)
+    {
+        sounds.play(ce::sound::Cue::MenuMove);
+    }
+}
+
 // The whole game: title, menus and the chosen mini-game, until "Quit" or the window closes.
 void play(const fs::path& assets, ce::core::ConfigWatcher& config)
 {
     using ce::core::Screen;
+    ce::sound::Sounds sounds;
     ce::core::PartyFlow flow{ce::app::minigame_infos()};
     ce::core::MenuTracker menu;
     std::unique_ptr<ce::render::MinigamePlay> running;
@@ -187,6 +203,7 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
             }
             if (ce::input::leave_pressed())
             {
+                sounds.play(ce::sound::Cue::MenuBack);
                 running.reset();
                 flow.minigame_over();
             }
@@ -204,6 +221,10 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
                     const ce::core::InputFrame input = tracker.next(game_down);
                     running->game().step({&input, 1}, clock.dt());
                 }
+                for (const ce::sound::Cue cue : running->take_cues())
+                {
+                    sounds.play(cue);
+                }
                 if (running->game().outcome() != ce::core::MinigameOutcome::Playing)
                 {
                     // TODO(CEL-00037): the result screen comes in between.
@@ -215,7 +236,10 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
         else
         {
             const Screen before = flow.screen();
+            const std::size_t cursor_before = flow.cursor();
             flow.input(menu_input);
+            play_menu_sound(sounds, menu_input, before != flow.screen(),
+                            cursor_before != flow.cursor());
             title_time = flow.screen() == Screen::Title && before == Screen::Title
                              ? title_time + frame
                              : 0.0;

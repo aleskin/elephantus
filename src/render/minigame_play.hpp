@@ -1,6 +1,9 @@
 #pragma once
 
 #include "core/party/minigame.hpp"
+#include "sound/cue.hpp"
+
+#include <vector>
 
 namespace ce::render
 {
@@ -18,6 +21,8 @@ public:
     virtual core::Minigame& game() = 0;
     // The whole frame, between BeginDrawing/EndDrawing or into a render texture.
     virtual void draw() const = 0;
+    // The sounds for what happened since the last call.
+    virtual std::vector<sound::Cue> take_cues() = 0;
 };
 
 } // namespace ce::render

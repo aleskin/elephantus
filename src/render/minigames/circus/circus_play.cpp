@@ -8,6 +8,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace ce::render::circus
 {
@@ -25,6 +26,25 @@ core::circus::LevelData load_drawable_level(const std::filesystem::path& path)
                                  level.location + "'");
     }
     return level;
+}
+
+sound::Cue cue_for(core::circus::EventKind kind)
+{
+    switch (kind)
+    {
+    case core::circus::EventKind::Jumped:
+        return sound::Cue::Jump;
+    case core::circus::EventKind::Landed:
+        return sound::Cue::Land;
+    case core::circus::EventKind::HoopPassed:
+        return sound::Cue::HoopPassed;
+    case core::circus::EventKind::HoopTouched:
+    case core::circus::EventKind::Fell:
+        return sound::Cue::Oops;
+    case core::circus::EventKind::LevelFinished:
+        return sound::Cue::LevelDone;
+    }
+    return sound::Cue::Land;
 }
 
 class CircusPlay : public MinigamePlay
@@ -46,6 +66,16 @@ public:
     {
         draw_scene(game_.game().world());
         draw_hud(game_.game());
+    }
+
+    std::vector<sound::Cue> take_cues() override
+    {
+        std::vector<sound::Cue> cues;
+        for (const core::circus::Event& event : game_.take_events())
+        {
+            cues.push_back(cue_for(event.kind));
+        }
+        return cues;
     }
 
 private:

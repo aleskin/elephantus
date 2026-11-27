@@ -6,6 +6,7 @@
 #include <filesystem>
 #include <stdexcept>
 #include <string_view>
+#include <vector>
 
 using ce::core::InputFrame;
 using ce::core::InputTracker;
@@ -16,6 +17,8 @@ using ce::core::parse_kv;
 using ce::core::PlayStyle;
 using ce::core::circus::Campaign;
 using ce::core::circus::CircusMinigame;
+using ce::core::circus::Event;
+using ce::core::circus::EventKind;
 using ce::core::circus::GamePhase;
 using ce::core::circus::LevelData;
 
@@ -88,6 +91,20 @@ TEST(Circus, WonAfterTheLastLevel)
     step(game, tracker, true, 0.01);
     EXPECT_EQ(game.outcome(), MinigameOutcome::Won);
     EXPECT_EQ(game.points(0), 0);
+}
+
+TEST(Circus, KeepsEventsUntilTaken)
+{
+    CircusMinigame game{one_level(), short_level, KvDocument{}};
+    InputTracker tracker;
+    for (int i = 0; i < 400 && game.game().phase() == GamePhase::Playing; ++i)
+    {
+        step(game, tracker, true, 0.01);
+    }
+    const std::vector<Event> events = game.take_events();
+    ASSERT_FALSE(events.empty());
+    EXPECT_EQ(events.back().kind, EventKind::LevelFinished);
+    EXPECT_TRUE(game.take_events().empty());
 }
 
 TEST(Circus, NumbersFromTheGameConfig)

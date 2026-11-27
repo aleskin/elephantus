@@ -4,6 +4,7 @@
 #include "core/party/minigame.hpp"
 
 #include <filesystem>
+#include <vector>
 
 namespace ce::core::circus
 {
@@ -22,6 +23,8 @@ public:
                    MinigameSetup setup = {});
 
     const Game& game() const;
+    // What happened since the last call (for sounds); the list is emptied.
+    std::vector<Event> take_events();
 
     const MinigameInfo& info() const override;
     void step(std::span<const InputFrame> players, double dt) override;
@@ -31,6 +34,7 @@ public:
 
 private:
     Game game_;
+    std::vector<Event> events_;
 };
 
 } // namespace ce::core::circus
