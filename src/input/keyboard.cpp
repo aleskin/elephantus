@@ -17,4 +17,17 @@ core::ButtonsDown read_keyboard(const core::Controls& controls)
     return down;
 }
 
+std::optional<int> pressed_key()
+{
+    std::optional<int> first;
+    for (int key = GetKeyPressed(); key != 0; key = GetKeyPressed())
+    {
+        if (!first)
+        {
+            first = key;
+        }
+    }
+    return first;
+}
+
 } // namespace ce::input

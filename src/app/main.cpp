@@ -3,6 +3,7 @@
 #include "app/script_run.hpp"
 #include "core/game_info.hpp"
 #include "core/input/controls.hpp"
+#include "core/input/controls_menu.hpp"
 #include "core/input/input_frame.hpp"
 #include "core/party/flow.hpp"
 #include "core/settings/config.hpp"
@@ -164,6 +165,53 @@ std::optional<ce::core::Controls> load_saved_controls(ce::core::PadLayout layout
     }
 }
 
+// Keeps the controls changed in "Settings" -> "Controls" for the next runs.
+void save_controls(const ce::core::Controls& controls)
+{
+    const fs::path dir = ce::core::user_config_dir();
+    if (dir.empty())
+    {
+        return;
+    }
+    try
+    {
+        ce::core::write_text_file(dir / "controls.txt", ce::core::format_controls(controls));
+    }
+    catch (const std::exception& error)
+    {
+        std::cerr << "circus_elephant: controls: " << error.what() << "\n";
+    }
+}
+
+// While the controls menu waits, the next key or gamepad button goes to it and nothing to
+// the other menus. Returns true when the frame was used up like that.
+bool wait_for_binding(ce::core::ControlsMenu& menu, ce::sound::Sounds& sounds)
+{
+    const std::optional<int> key = ce::input::pressed_key();
+    if (!menu.waiting())
+    {
+        return false;
+    }
+    const std::optional<ce::core::PadButton> pad = ce::input::pressed_pad_button();
+    if (key)
+    {
+        menu.assign_key(*key);
+    }
+    else if (pad)
+    {
+        menu.assign_pad(*pad);
+    }
+    else if (ce::input::leave_pressed())
+    {
+        menu.cancel();
+    }
+    if (!menu.waiting())
+    {
+        sounds.play(ce::sound::Cue::MenuSelect);
+    }
+    return true;
+}
+
 void play_menu_sound(ce::sound::Sounds& sounds, const ce::core::MenuInput& input,
                      bool screen_changed, bool cursor_moved)
 {
@@ -193,8 +241,9 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
     double title_time = 0.0;
     double since_reload = reloaded_note_time;
     std::optional<std::string> pads;
-    const std::optional<ce::core::Controls> saved_controls =
+    std::optional<ce::core::Controls> saved_controls =
         load_saved_controls(config.config().pad_layout);
+    std::optional<ce::core::ControlsMenu> controls_menu;
     while (!WindowShouldClose() && flow.screen() != Screen::Quit)
     {
         const double frame = GetFrameTime();
@@ -260,6 +309,34 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
                 }
             }
         }
+        else if (flow.screen() == Screen::Controls && controls_menu)
+        {
+            if (!wait_for_binding(*controls_menu, sounds))
+            {
+                const std::size_t row = controls_menu->row();
+                const ce::core::ControlsColumn column = controls_menu->column();
+                controls_menu->input(menu_input);
+                flow.input(menu_input);
+                if (flow.screen() != Screen::Controls)
+                {
+                    sounds.play(ce::sound::Cue::MenuBack);
+                    controls_menu.reset();
+                }
+                else if (menu_input.confirm)
+                {
+                    sounds.play(ce::sound::Cue::MenuSelect);
+                }
+                else if (row != controls_menu->row() || column != controls_menu->column())
+                {
+                    sounds.play(ce::sound::Cue::MenuMove);
+                }
+            }
+            if (controls_menu && controls_menu->take_changed())
+            {
+                saved_controls = controls_menu->controls();
+                save_controls(*saved_controls);
+            }
+        }
         else
         {
             const Screen before = flow.screen();
@@ -270,6 +347,11 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
             title_time = flow.screen() == Screen::Title && before == Screen::Title
                              ? title_time + frame
                              : 0.0;
+        }
+
+        if (flow.screen() == Screen::Controls && !controls_menu)
+        {
+            controls_menu.emplace(controls, config.config().pad_layout);
         }
 
         BeginDrawing();
@@ -283,6 +365,9 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
             break;
         case Screen::MinigameList:
             ce::render::draw_minigame_list(flow);
+            break;
+        case Screen::Controls:
+            ce::render::draw_controls(*controls_menu, config.config().pad_layout);
             break;
         case Screen::Minigame:
             if (running)

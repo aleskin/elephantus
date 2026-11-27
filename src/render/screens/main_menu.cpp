@@ -16,6 +16,8 @@ std::string label(core::MainMenuItem item)
     {
     case core::MainMenuItem::Minigames:
         return "Мини-игры";
+    case core::MainMenuItem::Settings:
+        return "Настройки";
     case core::MainMenuItem::Quit:
         return "Выход";
     }

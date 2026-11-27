@@ -81,9 +81,18 @@ void PartyFlow::input(const MenuInput& input)
     case Screen::MainMenu:
         if (input.confirm)
         {
-            screen_ = main_menu_items[main_cursor_] == MainMenuItem::Minigames
-                          ? Screen::MinigameList
-                          : Screen::Quit;
+            switch (main_menu_items[main_cursor_])
+            {
+            case MainMenuItem::Minigames:
+                screen_ = Screen::MinigameList;
+                break;
+            case MainMenuItem::Settings:
+                screen_ = Screen::Controls;
+                break;
+            case MainMenuItem::Quit:
+                screen_ = Screen::Quit;
+                break;
+            }
         }
         else if (input.back)
         {
@@ -96,6 +105,12 @@ void PartyFlow::input(const MenuInput& input)
             screen_ = Screen::Minigame;
         }
         else if (input.back)
+        {
+            screen_ = Screen::MainMenu;
+        }
+        break;
+    case Screen::Controls:
+        if (input.back)
         {
             screen_ = Screen::MainMenu;
         }

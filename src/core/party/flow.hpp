@@ -52,6 +52,8 @@ enum class Screen
     MainMenu,
     MinigameList,
     Minigame,
+    // "Settings": which keys and gamepad buttons the game buttons are (ControlsMenu).
+    Controls,
     Quit,
 };
 
@@ -59,14 +61,16 @@ enum class Screen
 enum class MainMenuItem
 {
     Minigames,
+    Settings,
     Quit,
 };
 
-inline constexpr std::array<MainMenuItem, 2> main_menu_items = {MainMenuItem::Minigames,
-                                                                MainMenuItem::Quit};
+inline constexpr std::array<MainMenuItem, 3> main_menu_items = {
+    MainMenuItem::Minigames, MainMenuItem::Settings, MainMenuItem::Quit};
 
 // Moves between the screens: title -> main menu -> mini-game list -> mini-game -> back to
-// the list. Knows nothing about drawing or keys.
+// the list; main menu -> settings and back. Knows nothing about drawing or keys. On the
+// settings screen only "back" is handled here, the rest goes to ControlsMenu.
 class PartyFlow
 {
 public:

@@ -299,10 +299,11 @@ src/core/                  elephant_core — чистый C++20, без raylib, 
   settings/                config — конфиг игры: [pad] + секции мини-игр, слежение за assets/config.txt;
                            user_files — папки игрока (~/.config/elephantus, ~/.local/share/elephantus), запись файла
   input/                   кнопки игры A/B/X/Y (GameButton), InputFrame, комбинации нажатий (Combo), раскладка джойстика (PadLayout);
-                           controls — названия действий, какая клавиша и кнопка джойстика у каждой кнопки игры, файл controls.txt
+                           controls — названия действий, какая клавиша и кнопка джойстика у каждой кнопки игры, файл controls.txt;
+                           controls_menu — таблица «Настройки» → «Управление»: выбор клетки, ждёт клавишу, обмен, сброс
   time/                    фиксированный шаг логики (FixedStep)
   party/                   общее для всех мини-игр: Minigame, MinigameInfo, игроки (до 4), PlayStyle;
-                           flow — ход по экранам (заставка, меню, список, мини-игра), кнопки меню
+                           flow — ход по экранам (заставка, меню, список, мини-игра, настройки), кнопки меню
   script/                  сценарии нажатий и снимков для make shots (CEL-00023)
   minigames/circus/        мини-игра «Цирковой слоник», ce::core::circus
     circus                 CircusMinigame (Minigame поверх Game) и info: id "circus", по очереди
@@ -316,7 +317,7 @@ src/render/                raylib: рисование
   camera                   камера сбоку, следует по x
   text                     шрифт игры с кириллицей (GameFont), draw_text / measure_text — все надписи через них
   minigame_play            MinigamePlay — запущенная мини-игра: правила + как её рисовать
-  screens/                 экраны вокруг мини-игр, один файл на экран: title, main_menu, minigame_list
+  screens/                 экраны вокруг мини-игр, один файл на экран: title, main_menu, minigame_list, controls
   minigames/circus/        ce::render::circus
     circus_play            start(): загрузка уровней, CircusMinigame, draw_scene
     scene                  кадр: место, предметы, слоник

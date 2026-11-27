@@ -54,6 +54,8 @@ struct Binding
 {
     int key = 0;
     PadButton pad = PadButton::FaceRight;
+
+    bool operator==(const Binding&) const = default;
 };
 
 // The controls of the game, changed in "Settings" -> "Controls" and kept in a file of the
@@ -64,6 +66,8 @@ struct Controls
 
     const Binding& operator[](GameButton button) const;
     Binding& operator[](GameButton button);
+
+    bool operator==(const Controls&) const = default;
 };
 
 // Keyboard: A walks, Left is X, Right is B, Y stays Y. Gamepad: walking is the d-pad

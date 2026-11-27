@@ -1,5 +1,6 @@
 #include "app/screen_shots.hpp"
 
+#include "core/input/controls_menu.hpp"
 #include "core/party/flow.hpp"
 #include "render/screens/screens.hpp"
 
@@ -68,6 +69,24 @@ void save_screens(std::vector<core::MinigameInfo> minigames, const std::filesyst
                 render::draw_minigame_list(flow);
             },
             dir / "minigame_list.png");
+
+        core::ControlsMenu controls{core::default_controls(core::PadLayout::Nintendo),
+                                    core::PadLayout::Nintendo};
+        save(
+            target,
+            [&]
+            {
+                render::draw_controls(controls, core::PadLayout::Nintendo);
+            },
+            dir / "controls.png");
+        controls.input(confirm);
+        save(
+            target,
+            [&]
+            {
+                render::draw_controls(controls, core::PadLayout::Nintendo);
+            },
+            dir / "controls_waiting.png");
     }
     catch (...)
     {

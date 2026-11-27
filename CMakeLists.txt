@@ -33,6 +33,7 @@ add_library(elephant_core STATIC
     src/core/input/combo.cpp
     src/core/input/pad_layout.cpp
     src/core/input/controls.cpp
+    src/core/input/controls_menu.cpp
     src/core/party/minigame.cpp
     src/core/party/flow.cpp
     src/core/settings/config.cpp
@@ -71,6 +72,7 @@ add_executable(circus_elephant
     src/render/screens/title.cpp
     src/render/screens/main_menu.cpp
     src/render/screens/minigame_list.cpp
+    src/render/screens/controls.cpp
     # Mini-game "circus".
     src/render/minigames/circus/circus_play.cpp
     src/render/minigames/circus/elephant_view.cpp
@@ -97,6 +99,7 @@ if(CE_BUILD_TESTS)
         tests/core/test_config.cpp
         tests/core/test_pad_layout.cpp
         tests/core/test_controls.cpp
+        tests/core/test_controls_menu.cpp
         tests/core/test_minigame.cpp
         tests/core/test_flow.cpp
         tests/core/test_script.cpp

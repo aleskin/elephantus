@@ -44,6 +44,25 @@ void read_gamepads(const core::Controls& controls, core::ButtonsDown& down)
     }
 }
 
+std::optional<core::PadButton> pressed_pad_button()
+{
+    for (int pad = 0; pad < max_gamepads; ++pad)
+    {
+        if (!IsGamepadAvailable(pad))
+        {
+            continue;
+        }
+        for (std::size_t i = 0; i < core::pad_button_count; ++i)
+        {
+            if (IsGamepadButtonPressed(pad, raylib_buttons[i]))
+            {
+                return static_cast<core::PadButton>(i);
+            }
+        }
+    }
+    return std::nullopt;
+}
+
 std::string gamepad_names()
 {
     std::string names;

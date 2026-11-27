@@ -85,10 +85,26 @@ TEST(PartyFlow, QuitFromMainMenu)
 {
     PartyFlow flow{two_games()};
     flow.input(confirm());
-    flow.input(down());
+    flow.input(up());
     EXPECT_EQ(main_menu_items[flow.cursor()], MainMenuItem::Quit);
     flow.input(confirm());
     EXPECT_EQ(flow.screen(), Screen::Quit);
+}
+
+TEST(PartyFlow, SettingsAndBack)
+{
+    PartyFlow flow{two_games()};
+    flow.input(confirm());
+    flow.input(down());
+    EXPECT_EQ(main_menu_items[flow.cursor()], MainMenuItem::Settings);
+    flow.input(confirm());
+    EXPECT_EQ(flow.screen(), Screen::Controls);
+    flow.input(confirm());
+    flow.input(down());
+    EXPECT_EQ(flow.screen(), Screen::Controls);
+    flow.input(back());
+    EXPECT_EQ(flow.screen(), Screen::MainMenu);
+    EXPECT_EQ(main_menu_items[flow.cursor()], MainMenuItem::Settings);
 }
 
 TEST(PartyFlow, CursorWrapsAround)
