@@ -10,6 +10,7 @@
 #include "input/keyboard.hpp"
 #include "input/menu.hpp"
 #include "render/screens/screens.hpp"
+#include "render/text.hpp"
 #include "sound/sounds.hpp"
 
 #include <raylib.h>
@@ -101,7 +102,7 @@ fs::path find_assets(const Options& options)
 constexpr double reloaded_note_time = 2.0;
 
 // A line at the bottom of the screen about the game config: its error, or a short note
-// that new numbers are in use. raylib's built-in font has no Cyrillic, so English.
+// that new numbers are in use.
 void draw_config_note(const ce::core::ConfigWatcher& config, double since_reload)
 {
     const int font = 20;
@@ -110,11 +111,11 @@ void draw_config_note(const ce::core::ConfigWatcher& config, double since_reload
     {
         const std::string text = "config: " + config.error();
         DrawRectangle(0, y - 6, window_width, font + 12, Fade(BLACK, 0.7F));
-        DrawText(text.c_str(), 10, y, font, RED);
+        ce::render::draw_text(text, 10, y, font, RED);
     }
     else if (since_reload < reloaded_note_time)
     {
-        DrawText("config reloaded", 10, y, font, DARKGREEN);
+        ce::render::draw_text("config reloaded", 10, y, font, DARKGREEN);
     }
 }
 
@@ -319,6 +320,7 @@ int main(int argc, char** argv)
 
         try
         {
+            const ce::render::GameFont font{assets};
             if (options.script)
             {
                 ce::app::run_script(*minigame, *options.script, options.shots);

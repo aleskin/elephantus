@@ -87,9 +87,11 @@ std::vector<short> make(Cue cue)
     case Cue::MenuMove:
         return synthesize({{880, 880, 0.05, Shape::Square, 0.25}});
     case Cue::MenuSelect:
-        return synthesize({{660, 660, 0.06, Shape::Square, 0.3}, {990, 990, 0.12, Shape::Square, 0.3}});
+        return synthesize(
+            {{660, 660, 0.06, Shape::Square, 0.3}, {990, 990, 0.12, Shape::Square, 0.3}});
     case Cue::MenuBack:
-        return synthesize({{550, 550, 0.06, Shape::Square, 0.3}, {370, 370, 0.12, Shape::Square, 0.3}});
+        return synthesize(
+            {{550, 550, 0.06, Shape::Square, 0.3}, {370, 370, 0.12, Shape::Square, 0.3}});
     case Cue::Jump:
         return synthesize({{280, 900, 0.22, Shape::Triangle, 0.7}});
     case Cue::Land:
@@ -99,7 +101,8 @@ std::vector<short> make(Cue cue)
                            {1319, 1319, 0.09, Shape::Sine, 0.6},
                            {1568, 1568, 0.3, Shape::Sine, 0.6}});
     case Cue::Oops:
-        return synthesize({{520, 380, 0.25, Shape::Triangle, 0.7}, {400, 160, 0.5, Shape::Triangle, 0.7}});
+        return synthesize(
+            {{520, 380, 0.25, Shape::Triangle, 0.7}, {400, 160, 0.5, Shape::Triangle, 0.7}});
     case Cue::LevelDone:
         return synthesize({{523, 523, 0.12, Shape::Square, 0.35},
                            {659, 659, 0.12, Shape::Square, 0.35},

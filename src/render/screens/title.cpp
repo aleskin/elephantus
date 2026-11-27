@@ -1,5 +1,6 @@
 #include "core/game_info.hpp"
 #include "render/screens/screens.hpp"
+#include "render/text.hpp"
 
 #include <raylib.h>
 
@@ -21,11 +22,6 @@ constexpr Color stripe_cream{240, 225, 190, 255};
 constexpr Color elephant_grey{160, 160, 170, 255};
 constexpr Color elephant_dark{120, 120, 132, 255};
 constexpr Color text_colour{230, 230, 240, 255};
-
-void draw_centred(const char* text, int y, int size, Color colour)
-{
-    DrawText(text, (GetScreenWidth() - MeasureText(text, size)) / 2, y, size, colour);
-}
 
 // Circus tent stripes along the top edge.
 void draw_tent(int width)
@@ -69,9 +65,9 @@ void draw_title(double time)
 
     const std::string name{core::game_title()};
     const int size = 120;
-    const int x = (width - MeasureText(name.c_str(), size)) / 2;
-    DrawText(name.c_str(), x + 6, 136, size, title_shadow);
-    DrawText(name.c_str(), x, 130, size, title_colour);
+    const int x = (width - measure_text(name, size)) / 2;
+    draw_text(name, x + 6, 106, size, title_shadow);
+    draw_text(name, x, 100, size, title_colour);
 
     const float floor = static_cast<float>(height) - 170.0F;
     DrawEllipse(width / 2, static_cast<int>(floor), 190.0F, 18.0F, Fade(BLACK, 0.4F));
@@ -80,11 +76,11 @@ void draw_title(double time)
 
     if (std::fmod(time, 1.0) < 0.65)
     {
-        draw_centred("Press A", height - 120, 44, text_colour);
+        draw_text_centred("Нажми A", height - 130, 52, text_colour);
     }
     const std::string version = "v" + std::string{core::game_version()};
-    DrawText(version.c_str(), width - MeasureText(version.c_str(), 20) - 16, height - 34, 20,
-             Fade(text_colour, 0.5F));
+    draw_text(version, width - measure_text(version, 22) - 16, height - 36, 22,
+              Fade(text_colour, 0.5F));
 }
 
 } // namespace ce::render

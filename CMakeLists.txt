@@ -63,6 +63,7 @@ add_executable(circus_elephant
     src/input/gamepad.cpp
     src/input/menu.cpp
     src/render/camera.cpp
+    src/render/text.cpp
     # Screens around the mini-games.
     src/render/screens/menu.cpp
     src/render/screens/title.cpp

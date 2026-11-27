@@ -312,6 +312,7 @@ src/core/                  elephant_core — чистый C++20, без raylib, 
     game/                  ход игры: уровень идёт → упал — уровень сначала / пройден → следующий
 src/render/                raylib: рисование
   camera                   камера сбоку, следует по x
+  text                     шрифт игры с кириллицей (GameFont), draw_text / measure_text — все надписи через них
   minigame_play            MinigamePlay — запущенная мини-игра: правила + как её рисовать
   screens/                 экраны вокруг мини-игр, один файл на экран: title, main_menu, minigame_list
   minigames/circus/        ce::render::circus
@@ -326,7 +327,7 @@ src/input/                 клавиатура (A/B/X/Y) и джойстики 
 src/sound/                 звуки, сделанные кодом при старте (без файлов): Cue — какой звук, Sounds — играть
 src/app/                   main, главный цикл, параметры запуска, сценарии и скриншоты (screen_shots — экраны меню)
   minigames                реестр мини-игр: id → info + start
-assets/                    config.txt (конфиг игры), позже fonts/, models/ (.glb), textures/, sounds/
+assets/                    config.txt (конфиг игры), fonts/ (Nunito, OFL), позже models/ (.glb), textures/, sounds/
 assets/minigames/circus/levels/  campaign.txt (порядок уровней), level_01.txt, …
 tests/core/                GoogleTest — только ядро; tests/core/minigames/<id>/ — тесты мини-игры
 tests/scripts/<id>/        сценарии нажатий мини-игры для make shots (CEL-00023)

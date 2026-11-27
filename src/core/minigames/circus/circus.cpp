@@ -8,8 +8,7 @@
 namespace ce::core::circus
 {
 
-// TODO(CEL-00034): the menu title in Russian once the game has a Cyrillic font.
-const MinigameInfo info{"circus", "Circus Elephant", PlayStyle::Turns, &check_config};
+const MinigameInfo info{"circus", "Цирковой слоник", PlayStyle::Turns, &check_config};
 
 std::filesystem::path campaign_path(const std::filesystem::path& assets)
 {

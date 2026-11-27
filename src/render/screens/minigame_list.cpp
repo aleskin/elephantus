@@ -14,8 +14,7 @@ void draw_minigame_list(const core::PartyFlow& flow)
     {
         items.emplace_back(info.title);
     }
-    draw_menu("Mini-games", items, flow.cursor(),
-              "A - play     B - back     Esc in a game - back here");
+    draw_menu("Мини-игры", items, flow.cursor(), "A — играть     B — назад     Esc в игре — сюда");
 }
 
 } // namespace ce::render

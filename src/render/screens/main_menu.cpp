@@ -15,9 +15,9 @@ std::string label(core::MainMenuItem item)
     switch (item)
     {
     case core::MainMenuItem::Minigames:
-        return "Mini-games";
+        return "Мини-игры";
     case core::MainMenuItem::Quit:
-        return "Quit";
+        return "Выход";
     }
     return "?";
 }
@@ -31,7 +31,8 @@ void draw_main_menu(const core::PartyFlow& flow)
     {
         items.push_back(label(item));
     }
-    draw_menu("Elephantus", items, flow.cursor(), "Up / Down - move     A - choose     B - back");
+    draw_menu("Elephantus", items, flow.cursor(),
+              "Вверх / вниз — выбрать     A — дальше     B — назад");
 }
 
 } // namespace ce::render

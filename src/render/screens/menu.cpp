@@ -1,5 +1,7 @@
 #include "render/screens/menu.hpp"
 
+#include "render/text.hpp"
+
 #include <raylib.h>
 
 namespace ce::render
@@ -16,12 +18,6 @@ constexpr Color chosen_colour{20, 20, 30, 255};
 constexpr Color chosen_box{250, 204, 80, 255};
 constexpr Color hint_colour{150, 150, 170, 255};
 
-void draw_centred(const std::string& text, int y, int size, Color colour)
-{
-    const int width = MeasureText(text.c_str(), size);
-    DrawText(text.c_str(), (GetScreenWidth() - width) / 2, y, size, colour);
-}
-
 } // namespace
 
 void draw_menu(const std::string& heading, const std::vector<std::string>& items,
@@ -31,7 +27,7 @@ void draw_menu(const std::string& heading, const std::vector<std::string>& items
     const int height = GetScreenHeight();
     DrawRectangleGradientV(0, 0, width, height, background_top, background_bottom);
 
-    draw_centred(heading, 80, 64, heading_colour);
+    draw_text_centred(heading, 80, 64, heading_colour);
 
     const int item_size = 44;
     const int item_step = 80;
@@ -45,16 +41,16 @@ void draw_menu(const std::string& heading, const std::vector<std::string>& items
                                 static_cast<float>(y - 14), static_cast<float>(box_width),
                                 static_cast<float>(item_size + 28)};
             DrawRectangleRounded(box, 0.4F, 8, chosen_box);
-            draw_centred(items[i], y, item_size, chosen_colour);
+            draw_text_centred(items[i], y, item_size, chosen_colour);
         }
         else
         {
-            draw_centred(items[i], y, item_size, item_colour);
+            draw_text_centred(items[i], y, item_size, item_colour);
         }
         y += item_step;
     }
 
-    draw_centred(hint, height - 70, 26, hint_colour);
+    draw_text_centred(hint, height - 70, 26, hint_colour);
 }
 
 } // namespace ce::render
