@@ -14,22 +14,18 @@ namespace
 // raylib numbers gamepads from 0; four is plenty for one family.
 constexpr int max_gamepads = 4;
 
-struct FaceButton
-{
-    core::PadFace face;
-    int button;
+// raylib numbers of the gamepad buttons, in the order of core::PadButton.
+constexpr std::array<int, core::pad_button_count> raylib_buttons = {
+    GAMEPAD_BUTTON_RIGHT_FACE_RIGHT, GAMEPAD_BUTTON_RIGHT_FACE_DOWN, GAMEPAD_BUTTON_RIGHT_FACE_UP,
+    GAMEPAD_BUTTON_RIGHT_FACE_LEFT,  GAMEPAD_BUTTON_LEFT_FACE_UP,    GAMEPAD_BUTTON_LEFT_FACE_DOWN,
+    GAMEPAD_BUTTON_LEFT_FACE_LEFT,   GAMEPAD_BUTTON_LEFT_FACE_RIGHT, GAMEPAD_BUTTON_LEFT_TRIGGER_1,
+    GAMEPAD_BUTTON_LEFT_TRIGGER_2,   GAMEPAD_BUTTON_RIGHT_TRIGGER_1, GAMEPAD_BUTTON_RIGHT_TRIGGER_2,
+    GAMEPAD_BUTTON_MIDDLE_LEFT,      GAMEPAD_BUTTON_LEFT_THUMB,      GAMEPAD_BUTTON_RIGHT_THUMB,
 };
-
-constexpr std::array<FaceButton, 4> faces = {{
-    {core::PadFace::Right, GAMEPAD_BUTTON_RIGHT_FACE_RIGHT},
-    {core::PadFace::Down, GAMEPAD_BUTTON_RIGHT_FACE_DOWN},
-    {core::PadFace::Up, GAMEPAD_BUTTON_RIGHT_FACE_UP},
-    {core::PadFace::Left, GAMEPAD_BUTTON_RIGHT_FACE_LEFT},
-}};
 
 } // namespace
 
-void read_gamepads(core::PadLayout layout, core::ButtonsDown& down)
+void read_gamepads(const core::Controls& controls, core::ButtonsDown& down)
 {
     for (int pad = 0; pad < max_gamepads; ++pad)
     {
@@ -37,11 +33,12 @@ void read_gamepads(core::PadLayout layout, core::ButtonsDown& down)
         {
             continue;
         }
-        for (const FaceButton& face : faces)
+        for (std::size_t i = 0; i < core::game_button_count; ++i)
         {
-            if (IsGamepadButtonDown(pad, face.button))
+            const auto button = static_cast<std::size_t>(controls.buttons[i].pad);
+            if (IsGamepadButtonDown(pad, raylib_buttons[button]))
             {
-                down[static_cast<std::size_t>(core::button_at(layout, face.face))] = true;
+                down[i] = true;
             }
         }
     }

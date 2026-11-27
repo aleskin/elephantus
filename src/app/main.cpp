@@ -2,9 +2,11 @@
 #include "app/screen_shots.hpp"
 #include "app/script_run.hpp"
 #include "core/game_info.hpp"
+#include "core/input/controls.hpp"
 #include "core/input/input_frame.hpp"
 #include "core/party/flow.hpp"
 #include "core/settings/config.hpp"
+#include "core/settings/user_files.hpp"
 #include "core/time/fixed_step.hpp"
 #include "input/gamepad.hpp"
 #include "input/keyboard.hpp"
@@ -142,6 +144,26 @@ bool any_down(const ce::core::ButtonsDown& down)
     return false;
 }
 
+// The controls the player saved in "Settings" -> "Controls"; nullopt means the defaults.
+// A broken file is reported and the defaults are used, the file stays as it is.
+std::optional<ce::core::Controls> load_saved_controls(ce::core::PadLayout layout)
+{
+    const fs::path dir = ce::core::user_config_dir();
+    if (dir.empty())
+    {
+        return std::nullopt;
+    }
+    try
+    {
+        return ce::core::load_controls(dir / "controls.txt", layout);
+    }
+    catch (const std::exception& error)
+    {
+        std::cerr << "circus_elephant: controls: " << error.what() << "; using the defaults\n";
+        return std::nullopt;
+    }
+}
+
 void play_menu_sound(ce::sound::Sounds& sounds, const ce::core::MenuInput& input,
                      bool screen_changed, bool cursor_moved)
 {
@@ -171,6 +193,8 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
     double title_time = 0.0;
     double since_reload = reloaded_note_time;
     std::optional<std::string> pads;
+    const std::optional<ce::core::Controls> saved_controls =
+        load_saved_controls(config.config().pad_layout);
     while (!WindowShouldClose() && flow.screen() != Screen::Quit)
     {
         const double frame = GetFrameTime();
@@ -185,8 +209,10 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
         }
         log_gamepads(pads);
 
-        ce::core::ButtonsDown down = ce::input::read_keyboard();
-        ce::input::read_gamepads(config.config().pad_layout, down);
+        const ce::core::Controls controls =
+            saved_controls.value_or(ce::core::default_controls(config.config().pad_layout));
+        ce::core::ButtonsDown down = ce::input::read_keyboard(controls);
+        ce::input::read_gamepads(controls, down);
         const ce::core::MenuInput menu_input =
             menu.next(ce::input::read_menu_buttons(config.config().pad_layout));
 
