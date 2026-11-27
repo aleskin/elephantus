@@ -4,3 +4,7 @@ inbox/
 
 # Build output
 build/
+
+# Eclipse CDT: local per-machine settings
+.cproject
+.settings/language.settings.xml
