@@ -1,12 +1,19 @@
 # Level 1: the circus arena.
 # Distances are in metres along the path; the level ends at x = length.
-# TODO(CEL-00012): one hoop for the grey prototype; how many hoops and where - Polina decides.
+# Owner (2026-11-27): three hoops for now.
+# TODO(CEL-00012): where the hoops stand and how far apart - Polina decides.
 
 [level]
 title = Circus Arena
 location = arena
-length = 30
+length = 44
 start = 2
 
 [hoop]
 x = 14
+
+[hoop]
+x = 24
+
+[hoop]
+x = 34

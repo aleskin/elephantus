@@ -141,12 +141,17 @@ TEST(Assets, EveryCampaignLevelLoads)
     }
 }
 
-TEST(Assets, FirstLevelHasOneHoopForThePrototype)
+TEST(Assets, FirstLevelHasThreeHoops)
 {
     const LevelData level = ce::core::circus::load_level(levels_dir / "level_01.txt");
     EXPECT_EQ(level.location, "arena");
-    ASSERT_EQ(level.objects.size(), 1u);
-    const Hoop& hoop = std::get<Hoop>(level.objects[0]);
-    EXPECT_GT(hoop.x, level.start_x);
-    EXPECT_LT(hoop.x, level.length);
+    ASSERT_EQ(level.objects.size(), 3u);
+    double previous = level.start_x;
+    for (const auto& object : level.objects)
+    {
+        const Hoop& hoop = std::get<Hoop>(object);
+        EXPECT_GT(hoop.x, previous);
+        EXPECT_LT(hoop.x, level.length);
+        previous = hoop.x;
+    }
 }

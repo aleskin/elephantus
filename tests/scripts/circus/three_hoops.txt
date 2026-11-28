@@ -1,0 +1,75 @@
+# The whole first level: on two legs, X then B before each of the three hoops, then on to
+# the end. Start x = 2, speed 3 m/s, hoops at x = 14, 24, 34: the take-offs at x = 12.9,
+# 22.9, 32.9 put the top of each jump right at its hoop (numbers from
+# core/minigames/circus/settings/tunables.hpp).
+
+[press]
+at = 0.5
+button = a
+
+[press]
+at = 4.13
+button = x
+
+[release]
+at = 4.15
+button = x
+
+[press]
+at = 4.15
+button = b
+
+[release]
+at = 4.2
+button = b
+
+[shot]
+at = 4.51
+name = hoop_1
+
+[press]
+at = 7.47
+button = x
+
+[release]
+at = 7.49
+button = x
+
+[press]
+at = 7.49
+button = b
+
+[release]
+at = 7.54
+button = b
+
+[shot]
+at = 7.85
+name = hoop_2
+
+[press]
+at = 10.8
+button = x
+
+[release]
+at = 10.82
+button = x
+
+[press]
+at = 10.82
+button = b
+
+[release]
+at = 10.87
+button = b
+
+[shot]
+at = 11.18
+name = hoop_3
+
+[shot]
+at = 14.7
+name = finished
+
+[end]
+at = 14.8
