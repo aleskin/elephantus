@@ -58,17 +58,49 @@ void draw_big_centred(std::string_view text, int y, Color colour)
     draw_text(text, x, y, size, colour);
 }
 
+// A smaller line under the big one.
+void draw_small_centred(std::string_view text, int y)
+{
+    const int size = 32;
+    const int width = measure_text(text, size);
+    const int x = (GetScreenWidth() - width) / 2;
+    DrawRectangleRounded({static_cast<float>(x - 20), static_cast<float>(y - 10),
+                          static_cast<float>(width + 40), static_cast<float>(size + 20)},
+                         0.3F, 8, panel);
+    draw_text(text, x, y, size, text_colour);
+}
+
+// Top left: the level, the points of this attempt, which attempt it is and the record.
+void draw_status(const core::circus::Game& game)
+{
+    const std::string level = "Уровень " + std::to_string(game.level_index() + 1) + " / " +
+                              std::to_string(game.level_count());
+    const std::string score = "Очки: " + std::to_string(game.score());
+    const std::string attempt =
+        "Попытка " + std::to_string(game.attempt()) + " / " + std::to_string(game.attempt_count());
+    const std::string record = "Рекорд: " + std::to_string(game.record());
+    const int size = 28;
+    const int gap = 36;
+    int x = 26;
+    const int width = measure_text(level, size) + measure_text(score, size) +
+                      measure_text(attempt, size) + measure_text(record, size) + 3 * gap;
+    DrawRectangleRounded({12.0F, 12.0F, static_cast<float>(width + 28), 46.0F}, 0.4F, 8, panel);
+    draw_text(level, x, 20, size, text_colour);
+    x += measure_text(level, size) + gap;
+    draw_text(score, x, 20, size, button_colour);
+    x += measure_text(score, size) + gap;
+    draw_text(attempt, x, 20, size, text_colour);
+    x += measure_text(attempt, size) + gap;
+    draw_text(record, x, 20, size, good_colour);
+}
+
 } // namespace
 
 void draw_hud(const core::circus::Game& game, const core::ButtonLabels& labels)
 {
     const int width = GetScreenWidth();
 
-    const std::string level = "Уровень " + std::to_string(game.level_index() + 1) + " / " +
-                              std::to_string(game.level_count());
-    DrawRectangleRounded({12.0F, 12.0F, static_cast<float>(measure_text(level, 28) + 28), 46.0F},
-                         0.4F, 8, panel);
-    draw_text(level, 26, 20, 28, text_colour);
+    draw_status(game);
     const char* leave = "Esc — меню";
     draw_text(leave, width - measure_text(leave, 22) - 20, 22, 22, Fade(text_colour, 0.7F));
 
@@ -94,7 +126,8 @@ void draw_hud(const core::circus::Game& game, const core::ButtonLabels& labels)
         }
         break;
     case core::circus::GamePhase::LevelFailed:
-        draw_big_centred("Ой! Ещё разок…", 150, bad_colour);
+        draw_big_centred(game.attempts_left() > 0 ? "Ой! Ещё разок…" : "Ой!", 150, bad_colour);
+        draw_small_centred("Очки за попытку: " + std::to_string(game.score()), 250);
         break;
     case core::circus::GamePhase::LevelComplete:
     {
@@ -103,6 +136,16 @@ void draw_hud(const core::circus::Game& game, const core::ButtonLabels& labels)
         break;
     }
     case core::circus::GamePhase::CampaignComplete:
+        draw_big_centred("Браво! Очки: " + std::to_string(game.score()), 150, good_colour);
+        draw_small_centred("Ещё попытка — нажми " + label_of(labels, core::GameButton::A), 250);
+        break;
+    case core::circus::GamePhase::GameOver:
+    case core::circus::GamePhase::Done:
+        draw_big_centred("Попытки кончились! Лучшие очки: " + std::to_string(game.best()), 150,
+                         button_colour);
+        draw_small_centred("Рекорд: " + std::to_string(game.record()) + ". Нажми " +
+                               label_of(labels, core::GameButton::A),
+                           250);
         break;
     }
 }

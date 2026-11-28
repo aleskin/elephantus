@@ -20,10 +20,18 @@ struct Tunables
     double fall_grace = 0.3;
     // TODO(CEL-00031): pause after a fall or a touched hoop before the level starts over.
     double restart_delay = 1.0;
+    // Owner (2026-11-27): points for a jump through a hoop. TODO(CEL-00055): fewer for a
+    // jump that is not perfect.
+    double hoop_points = 5.0;
+    // Owner (2026-11-27): attempts in one run; a fall or a touched hoop takes one.
+    double attempts = 3.0;
 
     // Speed straight up at the start of a jump and the time in the air.
     double jump_speed() const;
     double air_time() const;
+    // The two numbers above as whole numbers; at least one attempt.
+    int points_per_hoop() const;
+    int attempt_count() const;
 };
 
 } // namespace ce::core::circus

@@ -458,10 +458,136 @@ TEST(Game, GoesThroughLevelsToTheEnd)
     EXPECT_DOUBLE_EQ(game.world().level().length, 20.0);
 
     game.step(InputFrame{}, dt);
-    EXPECT_EQ(game.phase(), GamePhase::LevelComplete);
+    EXPECT_EQ(game.phase(), GamePhase::CampaignComplete);
     game.next_level();
     EXPECT_EQ(game.phase(), GamePhase::CampaignComplete);
     EXPECT_EQ(game.level_index(), 1u);
+}
+
+namespace
+{
+
+// Plays a game step by step with the given buttons held.
+struct GamePlayer
+{
+    Game& game;
+    InputTracker tracker{};
+
+    void run(double seconds, std::string_view letters)
+    {
+        for (int i = 0; i < steps_in(seconds); ++i)
+        {
+            game.step(tracker.next(down(letters)), dt);
+        }
+    }
+
+    // Stands up, then lets go of A: a fall, and the pause after it.
+    void fall()
+    {
+        run(0.5, "a");
+        run(0.4, "");
+        run(1.1, "");
+    }
+
+    // Through the hoop at x = 14 from the start at x = 2, the top of the jump at the hoop.
+    void pass_hoop()
+    {
+        const Tunables& t = game.world().tunables();
+        const double take_off = 14.0 - t.walk_speed * t.air_time() / 2.0;
+        run((take_off - 2.0) / t.walk_speed, "a");
+        run(dt, "ax");
+        run(dt, "ab");
+        run(2.0, "a");
+    }
+};
+
+} // namespace
+
+TEST(Game, FivePointsForAHoop)
+{
+    Game game{Campaign{{"a"}}, loader({{"a", level_with_hoop(14.0)}})};
+    GamePlayer player{game};
+    player.pass_hoop();
+    ASSERT_EQ(game.phase(), GamePhase::Playing);
+    EXPECT_EQ(game.score(), 5);
+    EXPECT_EQ(game.best(), 0);
+}
+
+TEST(Game, AFallEndsTheAttemptAndKeepsItsPoints)
+{
+    // TODO(CEL-00056): the points of a fallen attempt count for now.
+    Game game{Campaign{{"a"}}, loader({{"a", level_with_hoop(14.0)}})};
+    GamePlayer player{game};
+    EXPECT_EQ(game.attempt(), 1);
+    EXPECT_EQ(game.attempt_count(), 3);
+    player.pass_hoop();
+    player.run(0.4, "");
+    ASSERT_EQ(game.phase(), GamePhase::LevelFailed);
+    EXPECT_EQ(game.best(), 5);
+    EXPECT_EQ(game.attempt(), 1);
+
+    player.run(1.1, "");
+    EXPECT_EQ(game.phase(), GamePhase::Playing);
+    EXPECT_EQ(game.attempt(), 2);
+    EXPECT_EQ(game.score(), 0);
+    EXPECT_EQ(game.best(), 5);
+}
+
+TEST(Game, ThreeFallsAndTheGameIsOver)
+{
+    Game game{Campaign{{"a"}}, loader({{"a", level(30.0, 2.0)}})};
+    GamePlayer player{game};
+    player.fall();
+    player.fall();
+    EXPECT_EQ(game.attempt(), 3);
+    EXPECT_EQ(game.attempts_left(), 0);
+    player.fall();
+    EXPECT_EQ(game.phase(), GamePhase::GameOver);
+    player.run(dt, "a");
+    EXPECT_EQ(game.phase(), GamePhase::Done);
+}
+
+TEST(Game, TheLastLevelEndsTheAttemptAndANewOneStarts)
+{
+    // TODO(CEL-00056): finishing takes an attempt for now.
+    Game game{Campaign{{"a", "b"}}, loader({{"a", level(10.0, 10.0)}, {"b", level(20.0, 20.0)}})};
+    GamePlayer player{game};
+    player.run(dt, "");
+    ASSERT_EQ(game.phase(), GamePhase::LevelComplete);
+    player.run(dt, "a");
+    EXPECT_EQ(game.level_index(), 1u);
+    player.run(dt, "");
+    ASSERT_EQ(game.phase(), GamePhase::CampaignComplete);
+    EXPECT_EQ(game.attempt(), 1);
+    player.run(dt, "a");
+    EXPECT_EQ(game.attempt(), 2);
+    EXPECT_EQ(game.level_index(), 0u);
+}
+
+TEST(Game, AttemptsAndPointsFromTheNumbers)
+{
+    Tunables tunables;
+    tunables.attempts = 1.0;
+    tunables.hoop_points = 2.0;
+    Game game{Campaign{{"a"}}, loader({{"a", level_with_hoop(14.0)}}), tunables};
+    GamePlayer player{game};
+    player.pass_hoop();
+    EXPECT_EQ(game.score(), 2);
+    player.run(0.4, "");
+    player.run(1.1, "");
+    EXPECT_EQ(game.phase(), GamePhase::GameOver);
+    EXPECT_EQ(game.best(), 2);
+}
+
+TEST(Game, RecordIsTheFileOrThisRun)
+{
+    Game game{Campaign{{"a"}}, loader({{"a", level_with_hoop(14.0)}}), Tunables{}, 3};
+    GamePlayer player{game};
+    EXPECT_EQ(game.record(), 3);
+    player.pass_hoop();
+    EXPECT_EQ(game.record(), 3);
+    player.run(0.4, "");
+    EXPECT_EQ(game.record(), 5);
 }
 
 TEST(Game, AAfterTheLevelMovesOn)

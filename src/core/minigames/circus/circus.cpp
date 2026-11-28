@@ -31,7 +31,8 @@ MinigameSetup checked(MinigameSetup setup)
 
 CircusMinigame::CircusMinigame(Campaign campaign, Game::LevelLoader loader,
                                const KvDocument& config, MinigameSetup setup)
-    : game_((checked(setup), std::move(campaign)), std::move(loader), read_tunables(config))
+    : game_((checked(setup), std::move(campaign)), std::move(loader), read_tunables(config),
+            setup.record)
 {
 }
 
@@ -59,15 +60,14 @@ void CircusMinigame::step(std::span<const InputFrame> players, double dt)
 
 MinigameOutcome CircusMinigame::outcome() const
 {
-    // A fall or a touched hoop starts the level over, so the circus is never lost.
-    return game_.phase() == GamePhase::CampaignComplete ? MinigameOutcome::Won
-                                                        : MinigameOutcome::Playing;
+    // The circus is never lost: when the attempts are over the best one counts.
+    return game_.phase() == GamePhase::Done ? MinigameOutcome::Won : MinigameOutcome::Playing;
 }
 
 int CircusMinigame::points(int /*player*/) const
 {
     // TODO(CEL-00040): points for a good salto and for the cup, once Polina decides.
-    return 0;
+    return game_.best();
 }
 
 void CircusMinigame::apply_config(const KvDocument& config)

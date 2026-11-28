@@ -36,6 +36,7 @@ add_library(elephant_core STATIC
     src/core/input/controls_menu.cpp
     src/core/party/minigame.cpp
     src/core/party/flow.cpp
+    src/core/party/records.cpp
     src/core/settings/config.cpp
     src/core/settings/user_files.cpp
     src/core/time/fixed_step.cpp
@@ -103,6 +104,7 @@ if(CE_BUILD_TESTS)
         tests/core/test_controls_menu.cpp
         tests/core/test_minigame.cpp
         tests/core/test_flow.cpp
+        tests/core/test_records.cpp
         tests/core/test_script.cpp
         tests/core/minigames/circus/test_circus.cpp
         tests/core/minigames/circus/test_level.cpp

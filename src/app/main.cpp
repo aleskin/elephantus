@@ -6,6 +6,7 @@
 #include "core/input/controls_menu.hpp"
 #include "core/input/input_frame.hpp"
 #include "core/party/flow.hpp"
+#include "core/party/records.hpp"
 #include "core/settings/config.hpp"
 #include "core/settings/user_files.hpp"
 #include "core/time/fixed_step.hpp"
@@ -183,6 +184,52 @@ void save_controls(const ce::core::Controls& controls)
     }
 }
 
+std::optional<fs::path> records_path()
+{
+    const fs::path dir = ce::core::user_data_dir();
+    if (dir.empty())
+    {
+        return std::nullopt;
+    }
+    return dir / "records.txt";
+}
+
+ce::core::Records load_saved_records()
+{
+    const std::optional<fs::path> path = records_path();
+    if (!path)
+    {
+        return {};
+    }
+    try
+    {
+        return ce::core::load_records(*path);
+    }
+    catch (const std::exception& error)
+    {
+        std::cerr << "circus_elephant: records: " << error.what() << "; starting with none\n";
+        return {};
+    }
+}
+
+// The best points of every mini-game, for the next runs.
+void save_records(const ce::core::Records& records)
+{
+    const std::optional<fs::path> path = records_path();
+    if (!path)
+    {
+        return;
+    }
+    try
+    {
+        ce::core::write_text_file(*path, ce::core::format_records(records));
+    }
+    catch (const std::exception& error)
+    {
+        std::cerr << "circus_elephant: records: " << error.what() << "\n";
+    }
+}
+
 // While the controls menu waits, the next key or gamepad button goes to it and nothing to
 // the other menus. Returns true when the frame was used up like that.
 bool wait_for_binding(ce::core::ControlsMenu& menu, ce::sound::Sounds& sounds)
@@ -244,6 +291,7 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
     std::optional<ce::core::Controls> saved_controls =
         load_saved_controls(config.config().pad_layout);
     std::optional<ce::core::ControlsMenu> controls_menu;
+    ce::core::Records records = load_saved_records();
     // The hints show gamepad buttons after a gamepad button, keys after a key.
     bool hint_gamepad = false;
     while (!WindowShouldClose() && flow.screen() != Screen::Quit)
@@ -286,8 +334,9 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
             {
                 const ce::app::MinigameModule* module = ce::app::find_minigame(flow.chosen().id);
                 // TODO(CEL-00046): one player until players can join with their own controllers.
-                running =
-                    module->start(assets, config.config().document, ce::core::MinigameSetup{});
+                ce::core::MinigameSetup setup;
+                setup.record = records.best(module->info->id);
+                running = module->start(assets, config.config().document, setup);
                 clock = ce::core::FixedStep{};
                 tracker = ce::core::InputTracker{};
                 wait_for_release = true;
@@ -315,6 +364,10 @@ void play(const fs::path& assets, ce::core::ConfigWatcher& config)
                 for (const ce::sound::Cue cue : running->take_cues())
                 {
                     sounds.play(cue);
+                }
+                if (records.offer(running->game().info().id, running->game().points(0)))
+                {
+                    save_records(records);
                 }
                 if (running->game().outcome() != ce::core::MinigameOutcome::Playing)
                 {

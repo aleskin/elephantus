@@ -303,7 +303,8 @@ src/core/                  elephant_core — чистый C++20, без raylib, 
                            controls_menu — таблица «Настройки» → «Управление»: выбор клетки, ждёт клавишу, обмен, сброс
   time/                    фиксированный шаг логики (FixedStep)
   party/                   общее для всех мини-игр: Minigame, MinigameInfo, игроки (до 4), PlayStyle;
-                           flow — ход по экранам (заставка, меню, список, мини-игра, настройки), кнопки меню
+                           flow — ход по экранам (заставка, меню, список, мини-игра, настройки), кнопки меню;
+                           records — лучшие очки каждой мини-игры (records.txt пользователя)
   script/                  сценарии нажатий и снимков для make shots (CEL-00023)
   minigames/circus/        мини-игра «Цирковой слоник», ce::core::circus
     circus                 CircusMinigame (Minigame поверх Game) и info: id "circus", по очереди

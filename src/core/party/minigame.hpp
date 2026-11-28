@@ -23,6 +23,8 @@ enum class PlayStyle
 struct MinigameSetup
 {
     int players = 1;
+    // The best points ever in this mini-game, from the records file; for the screen.
+    int record = 0;
 };
 
 // Turns: exactly one player. Together: from two to max_players.
@@ -63,7 +65,8 @@ public:
     // as many as MinigameSetup::players.
     virtual void step(std::span<const InputFrame> players, double dt) = 0;
     virtual MinigameOutcome outcome() const = 0;
-    // Points of the i-th player of this run so far.
+    // Points of the i-th player of this run so far; a new record when above
+    // MinigameSetup::record.
     virtual int points(int player) const = 0;
     // The game config was changed while the game runs; it has passed check_config.
     virtual void apply_config(const KvDocument& config) = 0;
