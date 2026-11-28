@@ -543,12 +543,11 @@ TEST(Game, FivePointsForAHoop)
     player.pass_hoop();
     ASSERT_EQ(game.phase(), GamePhase::Playing);
     EXPECT_EQ(game.score(), 5);
-    EXPECT_EQ(game.best(), 0);
+    EXPECT_EQ(game.best(), 5);
 }
 
-TEST(Game, AFallTakesAnAttemptAndBurnsTheLevelPoints)
+TEST(Game, AFallTakesAnAttemptAndKeepsThePoints)
 {
-    // TODO(CEL-00060): the points of the level burn on a fall for now.
     Game game{Campaign{{"a"}}, loader({{"a", level_with_hoop(14.0)}})};
     GamePlayer player{game};
     EXPECT_EQ(game.attempt(), 1);
@@ -557,14 +556,15 @@ TEST(Game, AFallTakesAnAttemptAndBurnsTheLevelPoints)
     EXPECT_EQ(game.score(), 5);
     player.run(0.4, "");
     ASSERT_EQ(game.phase(), GamePhase::LevelFailed);
-    EXPECT_EQ(game.score(), 0);
+    EXPECT_EQ(game.score(), 5);
     EXPECT_EQ(game.attempt(), 1);
 
     player.run(1.1, "");
     EXPECT_EQ(game.phase(), GamePhase::Playing);
     EXPECT_EQ(game.attempt(), 2);
-    EXPECT_EQ(game.score(), 0);
-    EXPECT_EQ(game.best(), 0);
+    player.pass_hoop();
+    EXPECT_EQ(game.score(), 10);
+    EXPECT_EQ(game.best(), 10);
 }
 
 TEST(Game, ThreeFallsAndTheGameIsOver)
@@ -599,7 +599,7 @@ TEST(Game, AFallStartsThisLevelOverNotTheFirst)
     EXPECT_EQ(game.score(), 10);
     player.run(0.4, "");
     ASSERT_EQ(game.phase(), GamePhase::LevelFailed);
-    EXPECT_EQ(game.score(), 5);
+    EXPECT_EQ(game.score(), 10);
     player.run(1.1, "");
     EXPECT_EQ(game.phase(), GamePhase::Playing);
     EXPECT_EQ(game.level_index(), 1u);
@@ -659,9 +659,8 @@ TEST(Game, RecordIsTheFileOrThisRun)
     Game game{Campaign{{"a"}}, loader({{"a", level_with_hoop(14.0)}}), Tunables{}, 3};
     GamePlayer player{game};
     EXPECT_EQ(game.record(), 3);
-    player.pass_hoop();
     EXPECT_EQ(game.record(), 3);
-    player.run(10.0, "a");
+    player.pass_hoop();
     EXPECT_EQ(game.record(), 5);
 }
 

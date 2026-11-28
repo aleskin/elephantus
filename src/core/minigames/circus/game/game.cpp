@@ -73,12 +73,12 @@ int Game::attempts_left() const
 
 int Game::best() const
 {
-    return best_;
+    return score_;
 }
 
 int Game::record() const
 {
-    return std::max(record_, best_);
+    return std::max(record_, score_);
 }
 
 std::vector<Event> Game::step(const InputFrame& input, double dt)
@@ -130,15 +130,12 @@ std::vector<Event> Game::step(const InputFrame& input, double dt)
         }
         if (event.kind == EventKind::LevelFinished)
         {
-            keep_score();
             phase_ = level_index_ + 1 < campaign_.levels.size() ? GamePhase::LevelComplete
                                                                 : GamePhase::CampaignComplete;
         }
     }
     if (world_.failed())
     {
-        // TODO(CEL-00060): the points of the level burn on a fall until the owner answers.
-        score_ = level_start_score_;
         phase_ = GamePhase::LevelFailed;
         failed_for_ = 0.0;
     }
@@ -166,12 +163,6 @@ void Game::restart_level()
 {
     world_ = World{world_.level(), tunables_};
     phase_ = GamePhase::Playing;
-}
-
-void Game::keep_score()
-{
-    level_start_score_ = score_;
-    best_ = std::max(best_, score_);
 }
 
 } // namespace ce::core::circus

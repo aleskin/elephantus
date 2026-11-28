@@ -21,10 +21,10 @@ enum class GamePhase
     Done,
 };
 
-// The game from the first level to the last (owner, 2026-11-27, 2026-11-28): points for
-// every hoop add up over the levels; a fall takes an attempt and the same level starts
-// over; the podium leads to the next level; no attempts left or the last level done -
-// the points are the result.
+// The game from the first level to the last (owner, 2026-11-27, 2026-11-28): points always
+// add up, over the levels and over the falls; a fall takes an attempt and the same level
+// starts over; the podium leads to the next level; no attempts left or the last level
+// done - the points are the result.
 class Game
 {
 public:
@@ -46,7 +46,7 @@ public:
     int attempt_count() const;
     // Attempts after this one.
     int attempts_left() const;
-    // The points kept at the last podium: the result of this run.
+    // The result of this run: the points never burn, so it is the score.
     int best() const;
     // The best points ever: the records file or this run, whichever is more.
     int record() const;
@@ -59,7 +59,6 @@ public:
 
 private:
     void restart_level();
-    void keep_score();
 
     Campaign campaign_;
     LevelLoader loader_;
@@ -69,10 +68,8 @@ private:
     GamePhase phase_ = GamePhase::Playing;
     double failed_for_ = 0.0;
     int score_ = 0;
-    int level_start_score_ = 0;
     int attempt_count_;
     int attempt_ = 1;
-    int best_ = 0;
     int record_;
 };
 
