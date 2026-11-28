@@ -7,7 +7,6 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <initializer_list>
 #include <numbers>
 #include <vector>
 
@@ -19,7 +18,7 @@ namespace
 
 constexpr int sample_rate = 44100;
 constexpr std::size_t cue_count = 8;
-static_assert(static_cast<std::size_t>(Cue::LevelDone) + 1 == cue_count);
+static_assert(static_cast<std::size_t>(Cue::Applause) + 1 == cue_count);
 
 enum class Shape
 {
@@ -56,7 +55,7 @@ double wave(Shape shape, double phase, std::uint32_t& noise)
     return 0.0;
 }
 
-std::vector<short> synthesize(std::initializer_list<Note> notes)
+std::vector<short> synthesize(const std::vector<Note>& notes)
 {
     std::vector<short> samples;
     std::uint32_t noise = 12345U;
@@ -76,6 +75,37 @@ std::vector<short> synthesize(std::initializer_list<Note> notes)
             const double value = wave(note.shape, phase, noise) * envelope * note.volume;
             samples.push_back(static_cast<short>(value * 32767.0 * 0.8));
         }
+    }
+    return samples;
+}
+
+// Many short noise claps at random moments, louder at first, mixed on top of each other.
+std::vector<short> claps(double seconds)
+{
+    const int count = static_cast<int>(seconds * sample_rate);
+    const int clap_length = static_cast<int>(0.025 * sample_rate);
+    std::vector<double> mix(static_cast<std::size_t>(count), 0.0);
+    std::uint32_t random = 777U;
+    std::uint32_t noise = 12345U;
+    const int clap_count = static_cast<int>(seconds * 45.0);
+    for (int c = 0; c < clap_count; ++c)
+    {
+        random = random * 1664525U + 1013904223U;
+        const double when = static_cast<double>(random >> 8U) / static_cast<double>(1U << 24U);
+        const int start = static_cast<int>(when * (count - clap_length));
+        const double loudness = 0.35 * (1.0 - 0.7 * when);
+        for (int i = 0; i < clap_length; ++i)
+        {
+            const double t = static_cast<double>(i) / clap_length;
+            mix[static_cast<std::size_t>(start + i)] +=
+                wave(Shape::Noise, 0.0, noise) * (1.0 - t) * (1.0 - t) * loudness;
+        }
+    }
+    std::vector<short> samples;
+    samples.reserve(mix.size());
+    for (const double value : mix)
+    {
+        samples.push_back(static_cast<short>(std::clamp(value, -1.0, 1.0) * 32767.0 * 0.8));
     }
     return samples;
 }
@@ -100,14 +130,21 @@ std::vector<short> make(Cue cue)
         return synthesize({{1047, 1047, 0.09, Shape::Sine, 0.6},
                            {1319, 1319, 0.09, Shape::Sine, 0.6},
                            {1568, 1568, 0.3, Shape::Sine, 0.6}});
-    case Cue::Oops:
-        return synthesize(
-            {{520, 380, 0.25, Shape::Triangle, 0.7}, {400, 160, 0.5, Shape::Triangle, 0.7}});
-    case Cue::LevelDone:
-        return synthesize({{523, 523, 0.12, Shape::Square, 0.35},
-                           {659, 659, 0.12, Shape::Square, 0.35},
-                           {784, 784, 0.12, Shape::Square, 0.35},
-                           {1047, 1047, 0.5, Shape::Square, 0.35}});
+    case Cue::Sad:
+        return synthesize({{392, 392, 0.32, Shape::Triangle, 0.8},
+                           {370, 370, 0.32, Shape::Triangle, 0.8},
+                           {349, 349, 0.32, Shape::Triangle, 0.8},
+                           {330, 300, 0.9, Shape::Triangle, 0.8}});
+    case Cue::Applause:
+    {
+        std::vector<short> sound = synthesize({{523, 523, 0.12, Shape::Square, 0.35},
+                                               {659, 659, 0.12, Shape::Square, 0.35},
+                                               {784, 784, 0.12, Shape::Square, 0.35},
+                                               {1047, 1047, 0.5, Shape::Square, 0.35}});
+        const std::vector<short> crowd = claps(2.2);
+        sound.insert(sound.end(), crowd.begin(), crowd.end());
+        return sound;
+    }
     }
     return {};
 }

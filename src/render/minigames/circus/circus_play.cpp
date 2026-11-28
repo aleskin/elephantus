@@ -41,9 +41,9 @@ sound::Cue cue_for(core::circus::EventKind kind)
     case core::circus::EventKind::HoopTouched:
     case core::circus::EventKind::Fell:
     case core::circus::EventKind::PodiumHit:
-        return sound::Cue::Oops;
+        return sound::Cue::Sad;
     case core::circus::EventKind::LevelFinished:
-        return sound::Cue::LevelDone;
+        return sound::Cue::Applause;
     }
     return sound::Cue::Land;
 }

@@ -14,8 +14,8 @@ enum class Cue
     Jump,
     Land,
     HoopPassed,
-    Oops,
-    LevelDone,
+    Sad,      // a fall: a sad melody
+    Applause, // on the podium: a fanfare and the circus claps
 };
 
 } // namespace ce::sound
