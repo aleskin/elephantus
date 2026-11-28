@@ -27,6 +27,7 @@ struct Elephant
     double vy = 0.0; // speed up, metres per second
     double air_time = 0.0;
     double salto = 0.0;     // how much of the turn is done: 0 at the take-off, 1 at landing
+    bool backward = false;  // the salto turns backward, onto the back (B then X)
     double without_a = 0.0; // seconds on the floor without A and without a jump
 
     double centre_y() const

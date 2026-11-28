@@ -297,6 +297,48 @@ TEST(World, LateBDoesNotJump)
     EXPECT_EQ(world.elephant().state, ElephantState::Walking);
 }
 
+TEST(World, XThenBTurnsForward)
+{
+    World world{level(30.0, 2.0)};
+    Player player{world};
+    player.run(0.5, "a");
+    player.jump("a");
+    ASSERT_EQ(world.elephant().state, ElephantState::Jumping);
+    EXPECT_FALSE(world.elephant().backward);
+}
+
+TEST(World, BThenXIsTheBackwardSalto)
+{
+    World world{level(30.0, 2.0)};
+    Player player{world};
+    player.run(0.5, "a");
+    const double x = world.elephant().x;
+    player.run(dt, "ab");
+    player.run(dt, "a");
+    player.run(dt, "ax");
+    EXPECT_TRUE(player.saw(EventKind::Jumped));
+    ASSERT_EQ(world.elephant().state, ElephantState::Jumping);
+    EXPECT_TRUE(world.elephant().backward);
+    EXPECT_GT(world.elephant().x, x);
+
+    player.run(world.tunables().air_time() + 0.05, "a");
+    EXPECT_TRUE(player.saw(EventKind::Landed));
+    EXPECT_FALSE(world.failed());
+}
+
+TEST(World, WaitingForXAfterBKeepsTheElephantUp)
+{
+    World world{level(30.0, 2.0)};
+    Player player{world};
+    player.run(0.5, "a");
+    player.run(dt, "b");
+    player.run(0.35, "");
+    EXPECT_EQ(world.elephant().state, ElephantState::Walking);
+    player.run(dt, "x");
+    EXPECT_TRUE(player.saw(EventKind::Jumped));
+    EXPECT_TRUE(world.elephant().backward);
+}
+
 TEST(World, WalkingIntoAHoopTouchesIt)
 {
     World world{level_with_hoop(14.0)};

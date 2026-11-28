@@ -59,7 +59,7 @@ public:
     void set_tunables(const Tunables& tunables);
 
 private:
-    void walk(bool jump, bool a_held, double dt, std::vector<Event>& events);
+    void walk(bool jump, bool backward, bool a_held, double dt, std::vector<Event>& events);
     void fly(double dt, std::vector<Event>& events);
     void check_hoops(std::vector<Event>& events);
     void check_podium(std::vector<Event>& events);
@@ -71,7 +71,8 @@ private:
     std::vector<Hoop> hoops_; // sorted by x
     std::size_t next_hoop_ = 0;
     std::optional<Podium> podium_;
-    Combo salto_;
+    Combo salto_;          // X then B: the salto forward
+    Combo backward_salto_; // B then X: the salto backward
     Elephant elephant_;
     double time_ = 0.0;
     bool finished_ = false;

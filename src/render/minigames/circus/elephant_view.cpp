@@ -39,8 +39,9 @@ void draw_salto(const core::circus::Elephant& elephant)
 {
     const float x = static_cast<float>(elephant.x);
     const float cy = static_cast<float>(elephant.centre_y());
-    // TODO(CEL-00010): forward turn for now: clockwise seen from the camera while going +x.
-    const float angle = -360.0f * static_cast<float>(elephant.salto);
+    // Forward: clockwise seen from the camera while going +x; backward: the other way.
+    const float turn = elephant.backward ? 360.0f : -360.0f;
+    const float angle = turn * static_cast<float>(elephant.salto);
 
     rlPushMatrix();
     rlTranslatef(x, cy, 0.0f);

@@ -114,7 +114,11 @@ void draw_hud(const core::circus::Game& game, const core::ButtonLabels& labels)
     x = draw_button(label_of(labels, core::GameButton::X), x, y);
     x = draw_words("потом", x, y);
     x = draw_button(label_of(labels, core::GameButton::B), x, y);
-    draw_words("— прыжок с сальтухой", x, y);
+    x = draw_words("— сальтуха,", x, y);
+    x = draw_button(label_of(labels, core::GameButton::B), x, y);
+    x = draw_words("потом", x, y);
+    x = draw_button(label_of(labels, core::GameButton::X), x, y);
+    draw_words("— назад", x, y);
 
     switch (game.phase())
     {

@@ -1,0 +1,41 @@
+# The backward salto: B then X, through the same hoop as hoop_pass.txt; the elephant
+# turns onto its back while it flies forward (TODO(CEL-00063): or should it fly back?).
+
+[press]
+at = 0.5
+button = a
+
+[press]
+at = 4.13
+button = b
+
+[release]
+at = 4.15
+button = b
+
+[press]
+at = 4.15
+button = x
+
+[release]
+at = 4.2
+button = x
+
+[shot]
+at = 4.35
+name = quarter
+
+[shot]
+at = 4.51
+name = in_the_hoop
+
+[shot]
+at = 4.65
+name = three_quarters
+
+[shot]
+at = 5.3
+name = landed
+
+[end]
+at = 5.3

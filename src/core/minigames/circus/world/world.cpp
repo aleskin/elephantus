@@ -60,6 +60,7 @@ World::World(LevelData level, Tunables tunables)
     , hoops_(hoops_of(level_))
     , podium_(podium_of(level_))
     , salto_({GameButton::X, GameButton::B}, tunables_.salto_window)
+    , backward_salto_({GameButton::B, GameButton::X}, tunables_.salto_window)
 {
     elephant_.x = level_.start_x;
 }
@@ -107,7 +108,16 @@ std::vector<Event> World::step(const InputFrame& input, double dt)
         return events;
     }
     time_ += dt;
-    const bool jump = salto_.step(input, dt);
+    const bool forward = salto_.step(input, dt);
+    const bool backward = backward_salto_.step(input, dt);
+    if (forward)
+    {
+        backward_salto_.reset();
+    }
+    else if (backward)
+    {
+        salto_.reset();
+    }
     const bool a_held = input.held(GameButton::A);
 
     switch (elephant_.state)
@@ -119,7 +129,7 @@ std::vector<Event> World::step(const InputFrame& input, double dt)
         }
         break;
     case ElephantState::Walking:
-        walk(jump, a_held, dt, events);
+        walk(forward || backward, !forward && backward, a_held, dt, events);
         break;
     case ElephantState::Jumping:
         fly(dt, events);
@@ -148,9 +158,10 @@ void World::set_tunables(const Tunables& tunables)
 {
     tunables_ = tunables;
     salto_.set_window(tunables_.salto_window);
+    backward_salto_.set_window(tunables_.salto_window);
 }
 
-void World::walk(bool jump, bool a_held, double dt, std::vector<Event>& events)
+void World::walk(bool jump, bool backward, bool a_held, double dt, std::vector<Event>& events)
 {
     elephant_.x += speed() * dt;
     if (jump)
@@ -159,11 +170,13 @@ void World::walk(bool jump, bool a_held, double dt, std::vector<Event>& events)
         elephant_.vy = tunables_.jump_speed();
         elephant_.air_time = 0.0;
         elephant_.salto = 0.0;
+        // TODO(CEL-00063): the backward salto flies forward too, only turns the other way.
+        elephant_.backward = backward;
         elephant_.without_a = 0.0;
         events.push_back(Event{EventKind::Jumped});
         return;
     }
-    if (a_held || salto_.pending())
+    if (a_held || salto_.pending() || backward_salto_.pending())
     {
         elephant_.without_a = 0.0;
         return;
