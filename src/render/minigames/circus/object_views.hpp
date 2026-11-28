@@ -9,5 +9,6 @@ namespace ce::render::circus
 void draw_object(const core::circus::LevelObject& object);
 
 void draw_hoop(const core::circus::Hoop& hoop);
+void draw_podium(const core::circus::Podium& podium);
 
 } // namespace ce::render::circus

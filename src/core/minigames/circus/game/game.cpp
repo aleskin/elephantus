@@ -77,11 +77,11 @@ std::vector<Event> Game::step(const InputFrame& input, double dt)
         {
             phase_ = GamePhase::LevelComplete;
         }
-        if (event.kind == EventKind::Fell || event.kind == EventKind::HoopTouched)
-        {
-            phase_ = GamePhase::LevelFailed;
-            failed_for_ = 0.0;
-        }
+    }
+    if (world_.failed())
+    {
+        phase_ = GamePhase::LevelFailed;
+        failed_for_ = 0.0;
     }
     return events;
 }

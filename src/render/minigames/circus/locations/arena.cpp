@@ -2,6 +2,9 @@
 
 #include <raylib.h>
 
+#include <algorithm>
+#include <variant>
+
 namespace ce::render::circus
 {
 
@@ -43,7 +46,16 @@ void draw_arena(const core::circus::LevelData& level)
     {
         DrawCube(Vector3{x, 0.005f, 1.0f}, 0.05f, 0.01f, 0.6f, DARKGRAY);
     }
-    DrawCube(Vector3{length, 0.01f, 0.0f}, 0.15f, 0.02f, 4.0f, WHITE);
+    // The white finish line, unless the level ends on a podium.
+    const bool podium = std::any_of(level.objects.begin(), level.objects.end(),
+                                    [](const core::circus::LevelObject& object)
+                                    {
+                                        return std::holds_alternative<core::circus::Podium>(object);
+                                    });
+    if (!podium)
+    {
+        DrawCube(Vector3{length, 0.01f, 0.0f}, 0.15f, 0.02f, 4.0f, WHITE);
+    }
 }
 
 } // namespace ce::render::circus

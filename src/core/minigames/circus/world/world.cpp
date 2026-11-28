@@ -29,6 +29,18 @@ std::vector<Hoop> hoops_of(const LevelData& level)
     return hoops;
 }
 
+std::optional<Podium> podium_of(const LevelData& level)
+{
+    for (const LevelObject& object : level.objects)
+    {
+        if (const Podium* podium = std::get_if<Podium>(&object))
+        {
+            return *podium;
+        }
+    }
+    return std::nullopt;
+}
+
 } // namespace
 
 bool touches_hoop(const Hoop& hoop, double x, double centre_y, double radius)
@@ -46,6 +58,7 @@ World::World(LevelData level, Tunables tunables)
     : level_(std::move(level))
     , tunables_(tunables)
     , hoops_(hoops_of(level_))
+    , podium_(podium_of(level_))
     , salto_({GameButton::X, GameButton::B}, tunables_.salto_window)
 {
     elephant_.x = level_.start_x;
@@ -115,10 +128,13 @@ std::vector<Event> World::step(const InputFrame& input, double dt)
     }
 
     check_hoops(events);
-    if (!failed() && elephant_.x >= level_.length)
+    if (podium_)
     {
-        finished_ = true;
-        events.push_back(Event{EventKind::LevelFinished});
+        check_podium(events);
+    }
+    else if (!failed() && elephant_.x >= level_.length)
+    {
+        finish(events);
     }
     return events;
 }
@@ -158,9 +174,23 @@ void World::fly(double dt, std::vector<Event>& events)
 {
     elephant_.x += tunables_.walk_speed * dt;
     elephant_.vy -= tunables_.gravity * dt;
+    const double was_y = elephant_.y;
     elephant_.y += elephant_.vy * dt;
     elephant_.air_time += dt;
     elephant_.salto = std::min(1.0, elephant_.air_time / tunables_.air_time());
+
+    // Landing on the podium: coming down through its top with the middle above it.
+    if (podium_ && was_y >= podium_->height && elephant_.y <= podium_->height &&
+        elephant_.x >= podium_->left() && elephant_.x <= podium_->right())
+    {
+        elephant_.y = podium_->height;
+        elephant_.vy = 0.0;
+        elephant_.salto = 0.0;
+        elephant_.state = ElephantState::Walking;
+        events.push_back(Event{EventKind::Landed});
+        finish(events);
+        return;
+    }
     if (elephant_.y <= 0.0)
     {
         elephant_.y = 0.0;
@@ -168,6 +198,11 @@ void World::fly(double dt, std::vector<Event>& events)
         elephant_.salto = 0.0;
         elephant_.state = ElephantState::Walking;
         events.push_back(Event{EventKind::Landed});
+        // TODO(CEL-00053): flying over the podium onto the floor is a fall for now.
+        if (podium_ && elephant_.x > podium_->right())
+        {
+            fall(EventKind::Fell, events);
+        }
     }
 }
 
@@ -188,6 +223,27 @@ void World::check_hoops(std::vector<Event>& events)
         ++next_hoop_;
         events.push_back(Event{EventKind::HoopPassed});
     }
+}
+
+void World::check_podium(std::vector<Event>& events)
+{
+    if (finished_ || failed())
+    {
+        return;
+    }
+    // TODO(CEL-00053): running into the side of the podium is a fall for now.
+    const bool in_front = elephant_.x < podium_->left();
+    const bool reaches = elephant_.x + Elephant::body_radius > podium_->left();
+    if (in_front && reaches && elephant_.y < podium_->height)
+    {
+        fall(EventKind::PodiumHit, events);
+    }
+}
+
+void World::finish(std::vector<Event>& events)
+{
+    finished_ = true;
+    events.push_back(Event{EventKind::LevelFinished});
 }
 
 void World::fall(EventKind why, std::vector<Event>& events)

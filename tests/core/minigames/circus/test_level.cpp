@@ -4,11 +4,14 @@
 
 #include <filesystem>
 #include <fstream>
+#include <string>
+#include <variant>
 
 using ce::core::KvError;
 using ce::core::parse_kv;
 using ce::core::circus::Hoop;
 using ce::core::circus::LevelData;
+using ce::core::circus::Podium;
 
 namespace
 {
@@ -85,6 +88,28 @@ TEST(Level, ErrorsPointAtTheRightLine)
               4);
 }
 
+TEST(Level, ParsesPodium)
+{
+    const LevelData level = level_from("[level]\nlocation = arena\nlength = 20\n"
+                                       "[podium]\nx = 18\nwidth = 3\nheight = 0.8\n");
+    ASSERT_EQ(level.objects.size(), 1u);
+    const Podium& podium = std::get<Podium>(level.objects[0]);
+    EXPECT_DOUBLE_EQ(podium.x, 18.0);
+    EXPECT_DOUBLE_EQ(podium.left(), 16.5);
+    EXPECT_DOUBLE_EQ(podium.right(), 19.5);
+    EXPECT_DOUBLE_EQ(podium.height, 0.8);
+}
+
+TEST(Level, PodiumErrorsPointAtTheRightLine)
+{
+    const std::string head = "[level]\nlocation = arena\nlength = 20\n";
+    EXPECT_EQ(error_line(head + "[podium]\nwidth = 2\n"), 4);
+    EXPECT_EQ(error_line(head + "[podium]\nx = 10\nwidth = 0\n"), 6);
+    EXPECT_EQ(error_line(head + "[podium]\nx = 10\nheight = -1\n"), 6);
+    EXPECT_EQ(error_line(head + "[podium]\nx = 19.5\n"), 5);
+    EXPECT_EQ(error_line(head + "[podium]\nx = 10\n[podium]\nx = 15\n"), 6);
+}
+
 TEST(Level, KnownLocations)
 {
     EXPECT_TRUE(ce::core::circus::is_known_location("arena"));
@@ -141,17 +166,19 @@ TEST(Assets, EveryCampaignLevelLoads)
     }
 }
 
-TEST(Assets, FirstLevelHasThreeHoops)
+TEST(Assets, FirstLevelHasThreeHoopsAndThePodiumLast)
 {
     const LevelData level = ce::core::circus::load_level(levels_dir / "level_01.txt");
     EXPECT_EQ(level.location, "arena");
-    ASSERT_EQ(level.objects.size(), 3u);
+    ASSERT_EQ(level.objects.size(), 4u);
     double previous = level.start_x;
-    for (const auto& object : level.objects)
+    for (std::size_t i = 0; i < 3; ++i)
     {
-        const Hoop& hoop = std::get<Hoop>(object);
+        const Hoop& hoop = std::get<Hoop>(level.objects[i]);
         EXPECT_GT(hoop.x, previous);
-        EXPECT_LT(hoop.x, level.length);
         previous = hoop.x;
     }
+    const Podium& podium = std::get<Podium>(level.objects[3]);
+    EXPECT_GT(podium.left(), previous);
+    EXPECT_LE(podium.right(), level.length);
 }

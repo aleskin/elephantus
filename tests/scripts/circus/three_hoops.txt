@@ -1,7 +1,7 @@
-# The whole first level: on two legs, X then B before each of the three hoops, then on to
-# the end. Start x = 2, speed 3 m/s, hoops at x = 14, 24, 34: the take-offs at x = 12.9,
-# 22.9, 32.9 put the top of each jump right at its hoop (numbers from
-# core/minigames/circus/settings/tunables.hpp).
+# The whole first level: on two legs, X then B before each of the three hoops, then a
+# jump onto the podium. Start x = 2, speed 3 m/s, hoops at x = 14, 24, 34: the take-offs at
+# x = 12.9, 22.9, 32.9 put the top of each jump right at its hoop; the take-off at x = 38.7
+# lands on the podium (x = 40..42) (numbers from core/minigames/circus/settings/tunables.hpp).
 
 [press]
 at = 0.5
@@ -67,9 +67,29 @@ button = b
 at = 11.18
 name = hoop_3
 
+[press]
+at = 12.7
+button = x
+
+[release]
+at = 12.72
+button = x
+
+[press]
+at = 12.72
+button = b
+
+[release]
+at = 12.77
+button = b
+
 [shot]
-at = 14.7
+at = 13.1
+name = podium_jump
+
+[shot]
+at = 14.0
 name = finished
 
 [end]
-at = 14.8
+at = 14.1

@@ -15,6 +15,10 @@ constexpr float ring_thickness = 0.06f;
 constexpr float stand_radius = 0.04f;
 constexpr Color hoop_color{200, 200, 200, 255};
 constexpr Color stand_color{120, 120, 120, 255};
+constexpr Color podium_color{200, 60, 70, 255};
+constexpr Color podium_top_color{250, 204, 80, 255};
+constexpr float podium_depth = 2.0f;
+constexpr float podium_top = 0.06f;
 
 template <typename... Ts> struct Overloaded : Ts...
 {
@@ -30,6 +34,10 @@ void draw_object(const core::circus::LevelObject& object)
             [](const core::circus::Hoop& hoop)
             {
                 draw_hoop(hoop);
+            },
+            [](const core::circus::Podium& podium)
+            {
+                draw_podium(podium);
             },
         },
         object);
@@ -58,6 +66,20 @@ void draw_hoop(const core::circus::Hoop& hoop)
     DrawCylinderEx(Vector3{x, cy, stand_z}, Vector3{x, cy, -r}, stand_radius, stand_radius, 8,
                    stand_color);
     DrawCylinder(Vector3{x, 0.0f, stand_z}, 0.25f, 0.25f, 0.05f, 12, stand_color);
+}
+
+void draw_podium(const core::circus::Podium& podium)
+{
+    // A red circus box with a yellow top, the finish of the level.
+    const float x = static_cast<float>(podium.x);
+    const float w = static_cast<float>(podium.width);
+    const float h = static_cast<float>(podium.height);
+    DrawCube(Vector3{x, (h - podium_top) / 2.0f, 0.0f}, w, h - podium_top, podium_depth,
+             podium_color);
+    DrawCubeWires(Vector3{x, (h - podium_top) / 2.0f, 0.0f}, w, h - podium_top, podium_depth,
+                  podium_top_color);
+    DrawCube(Vector3{x, h - podium_top / 2.0f, 0.0f}, w + 0.1f, podium_top, podium_depth + 0.1f,
+             podium_top_color);
 }
 
 } // namespace ce::render::circus

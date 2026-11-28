@@ -309,7 +309,7 @@ src/core/                  elephant_core — чистый C++20, без raylib, 
     circus                 CircusMinigame (Minigame поверх Game) и info: id "circus", по очереди
     settings/              все числа слоника (Tunables) с TODO(CEL-…); config — секции [circus.*]
     elephant/              слоник: явные состояния (стоит, идёт, прыгает, упал)
-    objects/               предметы уровня, один файл на вид: hoop, позже cup, …
+    objects/               предметы уровня, один файл на вид: hoop, podium (финиш), позже cup, …
     level/                 LevelData (место, длина, предметы), загрузка уровня, список уровней
     world/                 World::step(input, dt) — слоник + предметы + правила → события
     game/                  ход игры: уровень идёт → упал — уровень сначала / пройден → следующий

@@ -15,7 +15,8 @@ namespace ce::core::circus
 bool is_known_location(std::string_view name);
 
 // One level: where it happens and what stands on the path. The path runs from x = 0
-// to x = length; the level is finished at x = length.
+// to x = length; the level is finished by landing on its podium, or at x = length if it
+// has none.
 struct LevelData
 {
     std::string title;
@@ -26,7 +27,7 @@ struct LevelData
 };
 
 // Level file: one [level] section (title, location, length, start) and one section
-// per object ([hoop], ...).
+// per object ([hoop], [podium], ...); at most one [podium].
 LevelData parse_level(const KvDocument& document);
 LevelData load_level(const std::filesystem::path& path);
 

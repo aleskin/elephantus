@@ -347,6 +347,97 @@ TEST(World, ReachingTheEndFinishesTheLevelOnce)
     EXPECT_TRUE(world.step(InputFrame{}, dt).empty());
 }
 
+namespace
+{
+
+// Start x = 2, podium x = 12..14: walking from the start takes the elephant to the podium.
+LevelData level_with_podium()
+{
+    LevelData data = level(20.0, 2.0);
+    data.objects.push_back(ce::core::circus::Podium{13.0, 2.0, 0.5});
+    return data;
+}
+
+// Walks on two legs until the middle of the elephant is at x, then jumps.
+void walk_to_and_jump(Player& player, double x)
+{
+    player.run(dt, "a");
+    while (player.world.elephant().x < x && !player.world.failed())
+    {
+        player.run(dt, "a");
+    }
+    player.jump("a");
+}
+
+} // namespace
+
+TEST(World, WithAPodiumTheEndOfThePathDoesNotFinish)
+{
+    LevelData data = level(10.0, 10.0);
+    data.objects.push_back(ce::core::circus::Podium{5.0, 2.0, 0.5});
+    World world{data};
+    EXPECT_TRUE(world.step(InputFrame{}, dt).empty());
+    EXPECT_FALSE(world.finished());
+}
+
+TEST(World, LandingOnThePodiumFinishesTheLevel)
+{
+    World world{level_with_podium()};
+    Player player{world};
+    walk_to_and_jump(player, 10.5);
+    player.run(1.0, "a");
+    EXPECT_TRUE(player.saw(EventKind::LevelFinished));
+    EXPECT_TRUE(world.finished());
+    EXPECT_FALSE(world.failed());
+    EXPECT_DOUBLE_EQ(world.elephant().y, 0.5);
+    EXPECT_GE(world.elephant().x, 12.0);
+    EXPECT_LE(world.elephant().x, 14.0);
+}
+
+TEST(World, WalkingIntoThePodiumIsAFall)
+{
+    World world{level_with_podium()};
+    Player player{world};
+    player.run(5.0, "a");
+    EXPECT_TRUE(player.saw(EventKind::PodiumHit));
+    EXPECT_TRUE(world.failed());
+    EXPECT_FALSE(world.finished());
+}
+
+TEST(World, JumpingShortOfThePodiumHitsItsSide)
+{
+    World world{level_with_podium()};
+    Player player{world};
+    walk_to_and_jump(player, 9.6);
+    player.run(1.0, "a");
+    EXPECT_TRUE(player.saw(EventKind::PodiumHit));
+    EXPECT_FALSE(world.finished());
+}
+
+TEST(World, FlyingOverThePodiumOntoTheFloorIsAFall)
+{
+    LevelData data = level(20.0, 2.0);
+    data.objects.push_back(ce::core::circus::Podium{13.0, 0.6, 0.5});
+    World world{data};
+    Player player{world};
+    walk_to_and_jump(player, 11.5);
+    player.run(1.0, "a");
+    EXPECT_TRUE(player.saw(EventKind::Fell));
+    EXPECT_TRUE(world.failed());
+    EXPECT_FALSE(world.finished());
+}
+
+TEST(Game, HittingThePodiumStartsTheLevelOver)
+{
+    Game game{Campaign{{"a"}}, loader({{"a", level_with_podium()}})};
+    InputTracker tracker;
+    for (int i = 0; i < steps_in(3.5); ++i)
+    {
+        game.step(tracker.next(down("a")), dt);
+    }
+    EXPECT_EQ(game.phase(), ce::core::circus::GamePhase::LevelFailed);
+}
+
 TEST(Game, GoesThroughLevelsToTheEnd)
 {
     Game game{Campaign{{"a", "b"}}, loader({{"a", level(10.0, 10.0)}, {"b", level(20.0, 20.0)}})};

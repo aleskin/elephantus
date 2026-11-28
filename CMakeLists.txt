@@ -43,6 +43,7 @@ add_library(elephant_core STATIC
     # Mini-game "circus": the elephant, hoops, levels.
     src/core/minigames/circus/circus.cpp
     src/core/minigames/circus/objects/hoop.cpp
+    src/core/minigames/circus/objects/podium.cpp
     src/core/minigames/circus/objects/level_object.cpp
     src/core/minigames/circus/level/level.cpp
     src/core/minigames/circus/settings/tunables.cpp

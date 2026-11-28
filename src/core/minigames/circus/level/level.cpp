@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <array>
+#include <variant>
 
 namespace ce::core::circus
 {
@@ -77,6 +78,7 @@ LevelData parse_level(const KvDocument& document)
         throw KvError(header.find("start")->line, "start must be inside the level");
     }
 
+    bool has_podium = false;
     for (const KvSection& section : document.sections)
     {
         if (section.name().empty() || &section == &header)
@@ -92,6 +94,18 @@ LevelData parse_level(const KvDocument& document)
         if (x < 0.0 || x > level.length)
         {
             throw KvError(section.find("x")->line, "x must be between 0 and the level length");
+        }
+        if (const Podium* podium = std::get_if<Podium>(&*object))
+        {
+            if (has_podium)
+            {
+                throw KvError(section.line(), "only one [podium] per level");
+            }
+            has_podium = true;
+            if (podium->right() > level.length)
+            {
+                throw KvError(section.find("x")->line, "podium goes past the level end");
+            }
         }
         level.objects.push_back(std::move(*object));
     }

@@ -1,7 +1,7 @@
 # Level 1: the circus arena.
-# Distances are in metres along the path; the level ends at x = length.
-# Owner (2026-11-27): three hoops for now.
-# TODO(CEL-00012): where the hoops stand and how far apart - Polina decides.
+# Distances are in metres along the path; the level is finished by landing on the podium.
+# Owner (2026-11-27): three hoops for now, the finish is a jump onto the podium.
+# TODO(CEL-00012): where the hoops and the podium stand, how big the podium is - Polina decides.
 
 [level]
 title = Circus Arena
@@ -17,3 +17,8 @@ x = 24
 
 [hoop]
 x = 34
+
+[podium]
+x = 41
+width = 2
+height = 0.5

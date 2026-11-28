@@ -9,6 +9,10 @@ std::optional<LevelObject> parse_object(const KvSection& section)
     {
         return parse_hoop(section);
     }
+    if (section.name() == "podium")
+    {
+        return parse_podium(section);
+    }
     return std::nullopt;
 }
 

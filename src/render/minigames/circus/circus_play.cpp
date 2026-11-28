@@ -40,6 +40,7 @@ sound::Cue cue_for(core::circus::EventKind kind)
         return sound::Cue::HoopPassed;
     case core::circus::EventKind::HoopTouched:
     case core::circus::EventKind::Fell:
+    case core::circus::EventKind::PodiumHit:
         return sound::Cue::Oops;
     case core::circus::EventKind::LevelFinished:
         return sound::Cue::LevelDone;

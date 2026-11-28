@@ -5,9 +5,11 @@
 #include "core/minigames/circus/elephant/elephant.hpp"
 #include "core/minigames/circus/level/level.hpp"
 #include "core/minigames/circus/objects/hoop.hpp"
+#include "core/minigames/circus/objects/podium.hpp"
 #include "core/minigames/circus/settings/tunables.hpp"
 
 #include <cstddef>
+#include <optional>
 #include <vector>
 
 namespace ce::core::circus
@@ -22,6 +24,7 @@ enum class EventKind
     HoopPassed,
     HoopTouched, // the level starts over
     Fell,        // back on four legs: the level starts over
+    PodiumHit,   // ran into the side of the podium: the level starts over
     LevelFinished,
 };
 
@@ -57,12 +60,15 @@ private:
     void walk(bool jump, bool a_held, double dt, std::vector<Event>& events);
     void fly(double dt, std::vector<Event>& events);
     void check_hoops(std::vector<Event>& events);
+    void check_podium(std::vector<Event>& events);
+    void finish(std::vector<Event>& events);
     void fall(EventKind why, std::vector<Event>& events);
 
     LevelData level_;
     Tunables tunables_;
     std::vector<Hoop> hoops_; // sorted by x
     std::size_t next_hoop_ = 0;
+    std::optional<Podium> podium_;
     Combo salto_;
     Elephant elephant_;
     double time_ = 0.0;

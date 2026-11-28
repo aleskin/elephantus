@@ -27,11 +27,11 @@ void block(Vector3 centre, float width, float height, Color color)
     DrawCubeWires(centre, width, height, body_depth, edge_color);
 }
 
-void draw_upright(float x)
+void draw_upright(float x, float y)
 {
-    block(Vector3{x, upright_height / 2.0f, 0.0f}, upright_width, upright_height, body_color);
+    block(Vector3{x, y + upright_height / 2.0f, 0.0f}, upright_width, upright_height, body_color);
     // A small block in front marks where the elephant looks.
-    block(Vector3{x + upright_width / 2.0f, upright_height - head_size / 2.0f, 0.0f}, head_size,
+    block(Vector3{x + upright_width / 2.0f, y + upright_height - head_size / 2.0f, 0.0f}, head_size,
           head_size, body_color);
 }
 
@@ -65,7 +65,7 @@ void draw_elephant(const core::circus::Elephant& elephant)
         block(Vector3{x, height / 2.0f, 0.0f}, length, height, body_color);
         break;
     case core::circus::ElephantState::Walking:
-        draw_upright(x);
+        draw_upright(x, static_cast<float>(elephant.y));
         break;
     case core::circus::ElephantState::Jumping:
         draw_salto(elephant);
