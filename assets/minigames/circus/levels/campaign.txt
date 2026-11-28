@@ -2,3 +2,6 @@
 
 [level]
 file = level_01.txt
+
+[level]
+file = level_02.txt

@@ -1,0 +1,284 @@
+# Level 1 as in three_hoops.txt, then A again and the whole of level 2: ten hoops at
+# x = 12, 18, ... 66 and the podium at x = 72..74. Level 2 starts walking at t = 14.1;
+# the take-off for a hoop at x = h is h - 1.08 (top of the jump at the hoop), for the
+# podium x = 70.7 (numbers from core/minigames/circus/settings/tunables.hpp).
+
+[press]
+at = 0.5
+button = a
+
+[press]
+at = 4.13
+button = x
+
+[release]
+at = 4.15
+button = x
+
+[press]
+at = 4.15
+button = b
+
+[release]
+at = 4.2
+button = b
+
+[press]
+at = 7.47
+button = x
+
+[release]
+at = 7.49
+button = x
+
+[press]
+at = 7.49
+button = b
+
+[release]
+at = 7.54
+button = b
+
+[press]
+at = 10.8
+button = x
+
+[release]
+at = 10.82
+button = x
+
+[press]
+at = 10.82
+button = b
+
+[release]
+at = 10.87
+button = b
+
+[press]
+at = 12.7
+button = x
+
+[release]
+at = 12.72
+button = x
+
+[press]
+at = 12.72
+button = b
+
+[release]
+at = 12.77
+button = b
+
+
+[shot]
+at = 13.9
+name = level_1_done
+
+[release]
+at = 14.0
+button = a
+
+[press]
+at = 14.1
+button = a
+
+[press]
+at = 17.05
+button = x
+
+[release]
+at = 17.07
+button = x
+
+[press]
+at = 17.07
+button = b
+
+[release]
+at = 17.12
+button = b
+
+[shot]
+at = 17.43
+name = hoop_1
+
+[press]
+at = 19.05
+button = x
+
+[release]
+at = 19.07
+button = x
+
+[press]
+at = 19.07
+button = b
+
+[release]
+at = 19.12
+button = b
+
+[press]
+at = 21.05
+button = x
+
+[release]
+at = 21.07
+button = x
+
+[press]
+at = 21.07
+button = b
+
+[release]
+at = 21.12
+button = b
+
+[press]
+at = 23.05
+button = x
+
+[release]
+at = 23.07
+button = x
+
+[press]
+at = 23.07
+button = b
+
+[release]
+at = 23.12
+button = b
+
+[press]
+at = 25.05
+button = x
+
+[release]
+at = 25.07
+button = x
+
+[press]
+at = 25.07
+button = b
+
+[release]
+at = 25.12
+button = b
+
+[shot]
+at = 25.43
+name = hoop_5
+
+[press]
+at = 27.05
+button = x
+
+[release]
+at = 27.07
+button = x
+
+[press]
+at = 27.07
+button = b
+
+[release]
+at = 27.12
+button = b
+
+[press]
+at = 29.05
+button = x
+
+[release]
+at = 29.07
+button = x
+
+[press]
+at = 29.07
+button = b
+
+[release]
+at = 29.12
+button = b
+
+[press]
+at = 31.05
+button = x
+
+[release]
+at = 31.07
+button = x
+
+[press]
+at = 31.07
+button = b
+
+[release]
+at = 31.12
+button = b
+
+[press]
+at = 33.05
+button = x
+
+[release]
+at = 33.07
+button = x
+
+[press]
+at = 33.07
+button = b
+
+[release]
+at = 33.12
+button = b
+
+[press]
+at = 35.05
+button = x
+
+[release]
+at = 35.07
+button = x
+
+[press]
+at = 35.07
+button = b
+
+[release]
+at = 35.12
+button = b
+
+[shot]
+at = 35.43
+name = hoop_10
+
+[press]
+at = 36.98
+button = x
+
+[release]
+at = 37.00
+button = x
+
+[press]
+at = 37.00
+button = b
+
+[release]
+at = 37.05
+button = b
+
+[shot]
+at = 37.36
+name = podium_jump
+
+[shot]
+at = 38.20
+name = finished
+
+[end]
+at = 38.30

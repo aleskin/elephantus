@@ -182,3 +182,26 @@ TEST(Assets, FirstLevelHasThreeHoopsAndThePodiumLast)
     EXPECT_GT(podium.left(), previous);
     EXPECT_LE(podium.right(), level.length);
 }
+
+TEST(Assets, SecondLevelHasTenHoopsCloserThanTheFirst)
+{
+    const LevelData first = ce::core::circus::load_level(levels_dir / "level_01.txt");
+    const LevelData second = ce::core::circus::load_level(levels_dir / "level_02.txt");
+    ASSERT_EQ(second.objects.size(), 11u);
+    const double first_gap =
+        std::get<Hoop>(first.objects[1]).x - std::get<Hoop>(first.objects[0]).x;
+    double previous = second.start_x;
+    for (std::size_t i = 0; i < 10; ++i)
+    {
+        const Hoop& hoop = std::get<Hoop>(second.objects[i]);
+        EXPECT_GT(hoop.x, previous);
+        if (i > 0)
+        {
+            EXPECT_LT(hoop.x - previous, first_gap);
+        }
+        previous = hoop.x;
+    }
+    const Podium& podium = std::get<Podium>(second.objects[10]);
+    EXPECT_GT(podium.left(), previous);
+    EXPECT_LE(podium.right(), second.length);
+}

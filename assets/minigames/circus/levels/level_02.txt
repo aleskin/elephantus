@@ -1,0 +1,45 @@
+# Level 2: ten hoops, closer together than in the tutorial - a faster tempo.
+# Distances are in metres along the path; the level is finished by landing on the podium.
+# Owner (2026-11-28): ten hoops, the tempo is higher than on level 1, the podium at the end.
+# TODO(CEL-00057-01): where the hoops stand - tune by playing.
+
+[level]
+title = Ten Hoops
+location = arena
+length = 76
+start = 2
+
+[hoop]
+x = 12
+
+[hoop]
+x = 18
+
+[hoop]
+x = 24
+
+[hoop]
+x = 30
+
+[hoop]
+x = 36
+
+[hoop]
+x = 42
+
+[hoop]
+x = 48
+
+[hoop]
+x = 54
+
+[hoop]
+x = 60
+
+[hoop]
+x = 66
+
+[podium]
+x = 73
+width = 2
+height = 0.5
