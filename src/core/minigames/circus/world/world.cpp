@@ -84,6 +84,11 @@ double World::time() const
     return time_;
 }
 
+double World::speed() const
+{
+    return tunables_.walk_speed + level_.speed_up * static_cast<double>(next_hoop_);
+}
+
 bool World::finished() const
 {
     return finished_;
@@ -147,7 +152,7 @@ void World::set_tunables(const Tunables& tunables)
 
 void World::walk(bool jump, bool a_held, double dt, std::vector<Event>& events)
 {
-    elephant_.x += tunables_.walk_speed * dt;
+    elephant_.x += speed() * dt;
     if (jump)
     {
         elephant_.state = ElephantState::Jumping;
@@ -172,7 +177,7 @@ void World::walk(bool jump, bool a_held, double dt, std::vector<Event>& events)
 
 void World::fly(double dt, std::vector<Event>& events)
 {
-    elephant_.x += tunables_.walk_speed * dt;
+    elephant_.x += speed() * dt;
     elephant_.vy -= tunables_.gravity * dt;
     const double was_y = elephant_.y;
     elephant_.y += elephant_.vy * dt;

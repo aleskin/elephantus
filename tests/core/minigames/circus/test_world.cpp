@@ -326,6 +326,39 @@ TEST(World, JumpingThroughAHoopPassesIt)
     EXPECT_GT(world.elephant().x, 15.0);
 }
 
+TEST(World, EveryHoopPassedSpeedsUpByTheLevelNumber)
+{
+    LevelData data = level_with_hoop(14.0);
+    data.objects.push_back(Hoop{24.0});
+    data.speed_up = 0.5;
+    World world{data};
+    Player player{world};
+    const Tunables& t = world.tunables();
+    EXPECT_DOUBLE_EQ(world.speed(), t.walk_speed);
+    const double take_off = 14.0 - t.walk_speed * t.air_time() / 2.0;
+    player.run((take_off - 2.0) / t.walk_speed, "a");
+    player.jump("a");
+    player.run(1.0, "a");
+    ASSERT_TRUE(player.saw(EventKind::HoopPassed));
+    EXPECT_DOUBLE_EQ(world.speed(), t.walk_speed + 0.5);
+    const double x = world.elephant().x;
+    player.run(1.0, "a");
+    EXPECT_NEAR(world.elephant().x - x, t.walk_speed + 0.5, 0.01);
+}
+
+TEST(World, WithoutSpeedUpTheSpeedStays)
+{
+    World world{level_with_hoop(14.0)};
+    Player player{world};
+    const Tunables& t = world.tunables();
+    const double take_off = 14.0 - t.walk_speed * t.air_time() / 2.0;
+    player.run((take_off - 2.0) / t.walk_speed, "a");
+    player.jump("a");
+    player.run(1.0, "a");
+    ASSERT_TRUE(player.saw(EventKind::HoopPassed));
+    EXPECT_DOUBLE_EQ(world.speed(), t.walk_speed);
+}
+
 TEST(World, JumpingTooEarlyTouchesTheHoop)
 {
     World world{level_with_hoop(14.0)};
@@ -572,6 +605,20 @@ TEST(Game, AFallStartsThisLevelOverNotTheFirst)
     EXPECT_EQ(game.level_index(), 1u);
     EXPECT_EQ(game.attempt(), 2);
     EXPECT_DOUBLE_EQ(game.world().elephant().x, 2.0);
+}
+
+TEST(Game, AFallStartsTheLevelOverAtTheFirstSpeed)
+{
+    LevelData data = level_with_hoop(14.0);
+    data.speed_up = 0.5;
+    Game game{Campaign{{"a"}}, loader({{"a", data}})};
+    GamePlayer player{game};
+    player.pass_hoop();
+    EXPECT_DOUBLE_EQ(game.world().speed(), 3.5);
+    player.run(0.4, "");
+    player.run(1.1, "");
+    ASSERT_EQ(game.phase(), GamePhase::Playing);
+    EXPECT_DOUBLE_EQ(game.world().speed(), 3.0);
 }
 
 TEST(Game, TheLastLevelEndsTheGame)

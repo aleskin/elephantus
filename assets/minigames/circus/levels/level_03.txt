@@ -1,0 +1,47 @@
+# Level 3: the ten hoops of level 2, and the elephant walks faster after every hoop.
+# Distances are in metres along the path; the level is finished by landing on the podium.
+# Owner (2026-11-28): every good jump speeds the elephant up; the level ends before it
+# gets too fast to press in time.
+# TODO(CEL-00057-02): how much faster after each hoop (speed_up, metres per second) - tune by playing.
+
+[level]
+title = Faster and Faster
+location = arena
+length = 78
+start = 2
+speed_up = 0.25
+
+[hoop]
+x = 12
+
+[hoop]
+x = 18
+
+[hoop]
+x = 24
+
+[hoop]
+x = 30
+
+[hoop]
+x = 36
+
+[hoop]
+x = 42
+
+[hoop]
+x = 48
+
+[hoop]
+x = 54
+
+[hoop]
+x = 60
+
+[hoop]
+x = 66
+
+[podium]
+x = 75
+width = 2
+height = 0.5

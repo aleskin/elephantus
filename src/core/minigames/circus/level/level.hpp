@@ -23,10 +23,12 @@ struct LevelData
     std::string location;
     double length = 0.0;
     double start_x = 0.0;
+    // How much faster the elephant walks after every hoop passed, metres per second.
+    double speed_up = 0.0;
     std::vector<LevelObject> objects; // sorted by x
 };
 
-// Level file: one [level] section (title, location, length, start) and one section
+// Level file: one [level] section (title, location, length, start, speed_up) and one section
 // per object ([hoop], [podium], ...); at most one [podium].
 LevelData parse_level(const KvDocument& document);
 LevelData load_level(const std::filesystem::path& path);

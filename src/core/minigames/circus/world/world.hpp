@@ -49,6 +49,8 @@ public:
     const Tunables& tunables() const;
     const Elephant& elephant() const;
     double time() const;
+    // Walking speed now: the walk speed plus the level's speed_up for every hoop passed.
+    double speed() const;
     bool finished() const;
     bool failed() const;
 

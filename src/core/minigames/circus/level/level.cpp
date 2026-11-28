@@ -77,6 +77,11 @@ LevelData parse_level(const KvDocument& document)
     {
         throw KvError(header.find("start")->line, "start must be inside the level");
     }
+    level.speed_up = header.number("speed_up", 0.0);
+    if (level.speed_up < 0.0)
+    {
+        throw KvError(header.find("speed_up")->line, "speed_up must not be below zero");
+    }
 
     bool has_podium = false;
     for (const KvSection& section : document.sections)

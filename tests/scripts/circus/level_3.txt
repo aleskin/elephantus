@@ -1,0 +1,465 @@
+# Levels 1 and 2 as in level_2.txt, then A again and the whole of level 3: the hoops of
+# level 2 and 0.25 m/s faster after each one, the podium at x = 74..76. Level 3 starts
+# walking at t = 38.3; the take-offs come from a small simulation of
+# core/minigames/circus/world/world.cpp with the numbers of settings/tunables.hpp.
+
+[press]
+at = 0.5
+button = a
+
+[press]
+at = 4.13
+button = x
+
+[release]
+at = 4.15
+button = x
+
+[press]
+at = 4.15
+button = b
+
+[release]
+at = 4.2
+button = b
+
+[press]
+at = 7.47
+button = x
+
+[release]
+at = 7.49
+button = x
+
+[press]
+at = 7.49
+button = b
+
+[release]
+at = 7.54
+button = b
+
+[press]
+at = 10.8
+button = x
+
+[release]
+at = 10.82
+button = x
+
+[press]
+at = 10.82
+button = b
+
+[release]
+at = 10.87
+button = b
+
+[press]
+at = 12.7
+button = x
+
+[release]
+at = 12.72
+button = x
+
+[press]
+at = 12.72
+button = b
+
+[release]
+at = 12.77
+button = b
+
+
+[release]
+at = 14.0
+button = a
+
+[press]
+at = 14.1
+button = a
+
+[press]
+at = 17.05
+button = x
+
+[release]
+at = 17.07
+button = x
+
+[press]
+at = 17.07
+button = b
+
+[release]
+at = 17.12
+button = b
+
+[press]
+at = 19.05
+button = x
+
+[release]
+at = 19.07
+button = x
+
+[press]
+at = 19.07
+button = b
+
+[release]
+at = 19.12
+button = b
+
+[press]
+at = 21.05
+button = x
+
+[release]
+at = 21.07
+button = x
+
+[press]
+at = 21.07
+button = b
+
+[release]
+at = 21.12
+button = b
+
+[press]
+at = 23.05
+button = x
+
+[release]
+at = 23.07
+button = x
+
+[press]
+at = 23.07
+button = b
+
+[release]
+at = 23.12
+button = b
+
+[press]
+at = 25.05
+button = x
+
+[release]
+at = 25.07
+button = x
+
+[press]
+at = 25.07
+button = b
+
+[release]
+at = 25.12
+button = b
+
+[press]
+at = 27.05
+button = x
+
+[release]
+at = 27.07
+button = x
+
+[press]
+at = 27.07
+button = b
+
+[release]
+at = 27.12
+button = b
+
+[press]
+at = 29.05
+button = x
+
+[release]
+at = 29.07
+button = x
+
+[press]
+at = 29.07
+button = b
+
+[release]
+at = 29.12
+button = b
+
+[press]
+at = 31.05
+button = x
+
+[release]
+at = 31.07
+button = x
+
+[press]
+at = 31.07
+button = b
+
+[release]
+at = 31.12
+button = b
+
+[press]
+at = 33.05
+button = x
+
+[release]
+at = 33.07
+button = x
+
+[press]
+at = 33.07
+button = b
+
+[release]
+at = 33.12
+button = b
+
+[press]
+at = 35.05
+button = x
+
+[release]
+at = 35.07
+button = x
+
+[press]
+at = 35.07
+button = b
+
+[release]
+at = 35.12
+button = b
+
+[press]
+at = 36.98
+button = x
+
+[release]
+at = 37.00
+button = x
+
+[press]
+at = 37.00
+button = b
+
+[release]
+at = 37.05
+button = b
+
+
+[shot]
+at = 38.2
+name = level_2_done
+
+[release]
+at = 38.2
+button = a
+
+[press]
+at = 38.3
+button = a
+
+[press]
+at = 41.25
+button = x
+
+[release]
+at = 41.27
+button = x
+
+[press]
+at = 41.27
+button = b
+
+[release]
+at = 41.32
+button = b
+
+[shot]
+at = 41.60
+name = hoop_1
+
+[press]
+at = 43.11
+button = x
+
+[release]
+at = 43.13
+button = x
+
+[press]
+at = 43.13
+button = b
+
+[release]
+at = 43.18
+button = b
+
+[press]
+at = 44.84
+button = x
+
+[release]
+at = 44.86
+button = x
+
+[press]
+at = 44.86
+button = b
+
+[release]
+at = 44.91
+button = b
+
+[press]
+at = 46.45
+button = x
+
+[release]
+at = 46.47
+button = x
+
+[press]
+at = 46.47
+button = b
+
+[release]
+at = 46.52
+button = b
+
+[press]
+at = 47.96
+button = x
+
+[release]
+at = 47.98
+button = x
+
+[press]
+at = 47.98
+button = b
+
+[release]
+at = 48.03
+button = b
+
+[press]
+at = 49.37
+button = x
+
+[release]
+at = 49.39
+button = x
+
+[press]
+at = 49.39
+button = b
+
+[release]
+at = 49.44
+button = b
+
+[press]
+at = 50.71
+button = x
+
+[release]
+at = 50.73
+button = x
+
+[press]
+at = 50.73
+button = b
+
+[release]
+at = 50.78
+button = b
+
+[press]
+at = 51.98
+button = x
+
+[release]
+at = 52.00
+button = x
+
+[press]
+at = 52.00
+button = b
+
+[release]
+at = 52.05
+button = b
+
+[press]
+at = 53.19
+button = x
+
+[release]
+at = 53.21
+button = x
+
+[press]
+at = 53.21
+button = b
+
+[release]
+at = 53.26
+button = b
+
+[press]
+at = 54.34
+button = x
+
+[release]
+at = 54.36
+button = x
+
+[press]
+at = 54.36
+button = b
+
+[release]
+at = 54.41
+button = b
+
+[shot]
+at = 54.69
+name = hoop_10
+
+[press]
+at = 55.69
+button = x
+
+[release]
+at = 55.71
+button = x
+
+[press]
+at = 55.71
+button = b
+
+[release]
+at = 55.76
+button = b
+
+[shot]
+at = 56.01
+name = podium_jump
+
+[shot]
+at = 56.91
+name = finished
+
+[end]
+at = 57.01

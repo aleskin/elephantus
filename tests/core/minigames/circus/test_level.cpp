@@ -71,6 +71,14 @@ TEST(Level, LevelWithoutObjectsIsValid)
     EXPECT_DOUBLE_EQ(level.start_x, 0.0);
 }
 
+TEST(Level, SpeedUpIsZeroUnlessGiven)
+{
+    EXPECT_DOUBLE_EQ(level_from("[level]\nlocation = arena\nlength = 10\n").speed_up, 0.0);
+    EXPECT_DOUBLE_EQ(
+        level_from("[level]\nlocation = arena\nlength = 10\nspeed_up = 0.25\n").speed_up, 0.25);
+    EXPECT_EQ(error_line("[level]\nlocation = arena\nlength = 10\nspeed_up = -1\n"), 4);
+}
+
 TEST(Level, ErrorsPointAtTheRightLine)
 {
     EXPECT_EQ(error_line("[hoop]\nx = 1\n"), 0);
@@ -204,4 +212,17 @@ TEST(Assets, SecondLevelHasTenHoopsCloserThanTheFirst)
     const Podium& podium = std::get<Podium>(second.objects[10]);
     EXPECT_GT(podium.left(), previous);
     EXPECT_LE(podium.right(), second.length);
+}
+
+TEST(Assets, ThirdLevelIsTheSecondWithSpeedUp)
+{
+    const LevelData second = ce::core::circus::load_level(levels_dir / "level_02.txt");
+    const LevelData third = ce::core::circus::load_level(levels_dir / "level_03.txt");
+    EXPECT_DOUBLE_EQ(second.speed_up, 0.0);
+    EXPECT_GT(third.speed_up, 0.0);
+    ASSERT_EQ(third.objects.size(), second.objects.size());
+    for (std::size_t i = 0; i + 1 < third.objects.size(); ++i)
+    {
+        EXPECT_DOUBLE_EQ(std::get<Hoop>(third.objects[i]).x, std::get<Hoop>(second.objects[i]).x);
+    }
 }
