@@ -22,6 +22,7 @@ enum class EventKind
     Jumped,
     Landed,
     HoopPassed,
+    SaltoDone,   // landed on the feet after a salto; `hoops` - how many it flew through
     HoopTouched, // the level starts over
     Fell,        // back on four legs: the level starts over
     PodiumHit,   // ran into the side of the podium: the level starts over
@@ -31,6 +32,7 @@ enum class EventKind
 struct Event
 {
     EventKind kind;
+    int hoops = 0;
 };
 
 // Does a ball touch a hoop standing across the path? In the side view only the opening
@@ -74,6 +76,9 @@ private:
     Combo salto_;          // X then B: the salto forward
     Combo backward_salto_; // B then X: the salto backward
     Elephant elephant_;
+    int salto_hoops_ = 0;    // hoops passed in the jump going on
+    bool landed_ = false;    // the jump ended in this step
+    bool on_podium_ = false; // ... on top of the podium
     double time_ = 0.0;
     bool finished_ = false;
 };

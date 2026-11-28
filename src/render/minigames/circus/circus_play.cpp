@@ -6,6 +6,7 @@
 #include "render/minigames/circus/locations/location.hpp"
 #include "render/minigames/circus/scene.hpp"
 
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -28,7 +29,7 @@ core::circus::LevelData load_drawable_level(const std::filesystem::path& path)
     return level;
 }
 
-sound::Cue cue_for(core::circus::EventKind kind)
+std::optional<sound::Cue> cue_for(core::circus::EventKind kind)
 {
     switch (kind)
     {
@@ -44,8 +45,10 @@ sound::Cue cue_for(core::circus::EventKind kind)
         return sound::Cue::Sad;
     case core::circus::EventKind::LevelFinished:
         return sound::Cue::Applause;
+    case core::circus::EventKind::SaltoDone:
+        return std::nullopt;
     }
-    return sound::Cue::Land;
+    return std::nullopt;
 }
 
 class CircusPlay : public MinigamePlay
@@ -74,7 +77,10 @@ public:
         std::vector<sound::Cue> cues;
         for (const core::circus::Event& event : game_.take_events())
         {
-            cues.push_back(cue_for(event.kind));
+            if (const std::optional<sound::Cue> cue = cue_for(event.kind))
+            {
+                cues.push_back(*cue);
+            }
         }
         return cues;
     }

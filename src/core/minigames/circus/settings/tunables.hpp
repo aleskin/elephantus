@@ -20,17 +20,21 @@ struct Tunables
     double fall_grace = 0.3;
     // TODO(CEL-00031): pause after a fall or a touched hoop before the level starts over.
     double restart_delay = 1.0;
-    // Owner (2026-11-27): points for a jump through a hoop. TODO(CEL-00055): fewer for a
-    // jump that is not perfect.
-    double hoop_points = 5.0;
+    // Owner (2026-11-28): points for every salto, forward or backward, with or without a
+    // hoop. TODO(CEL-00064): 5 from the earlier "5 for a jump"; TODO(CEL-00055): fewer for
+    // a jump that is not perfect.
+    double salto_points = 5.0;
+    // Owner (2026-11-28): a salto through a hoop gives this many times the points.
+    double hoop_multiplier = 2.0;
     // Owner (2026-11-27): attempts in one run; a fall or a touched hoop takes one.
     double attempts = 3.0;
 
     // Speed straight up at the start of a jump and the time in the air.
     double jump_speed() const;
     double air_time() const;
-    // The two numbers above as whole numbers; at least one attempt.
-    int points_per_hoop() const;
+    // Points for a salto that flew through `hoops` hoops; whole points.
+    int salto_score(int hoops) const;
+    // At least one attempt.
     int attempt_count() const;
 };
 

@@ -18,14 +18,15 @@ struct Knob
     double Tunables::* value;
 };
 
-constexpr std::array<Knob, 8> knobs = {{
+constexpr std::array<Knob, 9> knobs = {{
     {"circus.elephant", "walk_speed", &Tunables::walk_speed},
     {"circus.elephant", "jump_height", &Tunables::jump_height},
     {"circus.elephant", "gravity", &Tunables::gravity},
     {"circus.elephant", "fall_grace", &Tunables::fall_grace},
     {"circus.buttons", "salto_window", &Tunables::salto_window},
     {"circus.game", "restart_delay", &Tunables::restart_delay},
-    {"circus.game", "hoop_points", &Tunables::hoop_points},
+    {"circus.game", "salto_points", &Tunables::salto_points},
+    {"circus.game", "hoop_multiplier", &Tunables::hoop_multiplier},
     {"circus.game", "attempts", &Tunables::attempts},
 }};
 

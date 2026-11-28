@@ -124,9 +124,9 @@ std::vector<Event> Game::step(const InputFrame& input, double dt)
     std::vector<Event> events = world_.step(input, dt);
     for (const Event& event : events)
     {
-        if (event.kind == EventKind::HoopPassed)
+        if (event.kind == EventKind::SaltoDone)
         {
-            score_ += tunables_.points_per_hoop();
+            score_ += tunables_.salto_score(event.hoops);
         }
         if (event.kind == EventKind::LevelFinished)
         {

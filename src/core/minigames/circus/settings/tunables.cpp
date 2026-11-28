@@ -16,9 +16,9 @@ double Tunables::air_time() const
     return 2.0 * jump_speed() / gravity;
 }
 
-int Tunables::points_per_hoop() const
+int Tunables::salto_score(int hoops) const
 {
-    return static_cast<int>(std::lround(hoop_points));
+    return static_cast<int>(std::lround(salto_points * (hoops > 0 ? hoop_multiplier : 1.0)));
 }
 
 int Tunables::attempt_count() const

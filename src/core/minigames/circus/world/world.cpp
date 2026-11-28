@@ -108,6 +108,8 @@ std::vector<Event> World::step(const InputFrame& input, double dt)
         return events;
     }
     time_ += dt;
+    landed_ = false;
+    on_podium_ = false;
     const bool forward = salto_.step(input, dt);
     const bool backward = backward_salto_.step(input, dt);
     if (forward)
@@ -143,7 +145,15 @@ std::vector<Event> World::step(const InputFrame& input, double dt)
     }
 
     check_hoops(events);
-    if (podium_)
+    if (landed_ && !failed())
+    {
+        events.push_back(Event{EventKind::SaltoDone, salto_hoops_});
+    }
+    if (on_podium_ && !failed())
+    {
+        finish(events);
+    }
+    else if (podium_)
     {
         check_podium(events);
     }
@@ -173,6 +183,7 @@ void World::walk(bool jump, bool backward, bool a_held, double dt, std::vector<E
         // TODO(CEL-00063): the backward salto flies forward too, only turns the other way.
         elephant_.backward = backward;
         elephant_.without_a = 0.0;
+        salto_hoops_ = 0;
         events.push_back(Event{EventKind::Jumped});
         return;
     }
@@ -206,7 +217,8 @@ void World::fly(double dt, std::vector<Event>& events)
         elephant_.salto = 0.0;
         elephant_.state = ElephantState::Walking;
         events.push_back(Event{EventKind::Landed});
-        finish(events);
+        landed_ = true;
+        on_podium_ = true;
         return;
     }
     if (elephant_.y <= 0.0)
@@ -216,6 +228,7 @@ void World::fly(double dt, std::vector<Event>& events)
         elephant_.salto = 0.0;
         elephant_.state = ElephantState::Walking;
         events.push_back(Event{EventKind::Landed});
+        landed_ = true;
         // TODO(CEL-00053): flying over the podium onto the floor is a fall for now.
         if (podium_ && elephant_.x > podium_->right())
         {
@@ -239,6 +252,10 @@ void World::check_hoops(std::vector<Event>& events)
             return;
         }
         ++next_hoop_;
+        if (elephant_.state == ElephantState::Jumping || landed_)
+        {
+            ++salto_hoops_;
+        }
         events.push_back(Event{EventKind::HoopPassed});
     }
 }

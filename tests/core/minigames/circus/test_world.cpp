@@ -467,6 +467,7 @@ TEST(World, LandingOnThePodiumFinishesTheLevel)
     EXPECT_DOUBLE_EQ(world.elephant().y, 0.5);
     EXPECT_GE(world.elephant().x, 12.0);
     EXPECT_LE(world.elephant().x, 14.0);
+    EXPECT_TRUE(player.saw(EventKind::SaltoDone));
 }
 
 TEST(World, WalkingIntoThePodiumIsAFall)
@@ -578,14 +579,49 @@ struct GamePlayer
 
 } // namespace
 
-TEST(Game, FivePointsForAHoop)
+TEST(Game, TenPointsForASaltoThroughAHoop)
 {
     Game game{Campaign{{"a"}}, loader({{"a", level_with_hoop(14.0)}})};
     GamePlayer player{game};
     player.pass_hoop();
     ASSERT_EQ(game.phase(), GamePhase::Playing);
+    EXPECT_EQ(game.score(), 10);
+    EXPECT_EQ(game.best(), 10);
+}
+
+TEST(Game, FivePointsForASaltoWithoutAHoop)
+{
+    Game game{Campaign{{"a"}}, loader({{"a", level(30.0, 2.0)}})};
+    GamePlayer player{game};
+    player.run(0.5, "a");
+    player.run(dt, "ax");
+    player.run(dt, "ab");
+    EXPECT_EQ(game.score(), 0);
+    player.run(1.0, "a");
     EXPECT_EQ(game.score(), 5);
-    EXPECT_EQ(game.best(), 5);
+
+    player.run(dt, "ab");
+    player.run(dt, "ax");
+    player.run(1.0, "a");
+    EXPECT_EQ(game.score(), 10);
+}
+
+TEST(Game, NoPointsForASaltoThatEndsInAFall)
+{
+    LevelData data = level(20.0, 2.0);
+    data.objects.push_back(ce::core::circus::Podium{13.0, 0.6, 0.5});
+    Game game{Campaign{{"a"}}, loader({{"a", data}})};
+    GamePlayer player{game};
+    player.run(dt, "a");
+    while (game.world().elephant().x < 11.5)
+    {
+        player.run(dt, "a");
+    }
+    player.run(dt, "ax");
+    player.run(dt, "ab");
+    player.run(1.0, "a");
+    ASSERT_EQ(game.phase(), GamePhase::LevelFailed);
+    EXPECT_EQ(game.score(), 0);
 }
 
 TEST(Game, AFallTakesAnAttemptAndKeepsThePoints)
@@ -595,18 +631,18 @@ TEST(Game, AFallTakesAnAttemptAndKeepsThePoints)
     EXPECT_EQ(game.attempt(), 1);
     EXPECT_EQ(game.attempt_count(), 3);
     player.pass_hoop();
-    EXPECT_EQ(game.score(), 5);
+    EXPECT_EQ(game.score(), 10);
     player.run(0.4, "");
     ASSERT_EQ(game.phase(), GamePhase::LevelFailed);
-    EXPECT_EQ(game.score(), 5);
+    EXPECT_EQ(game.score(), 10);
     EXPECT_EQ(game.attempt(), 1);
 
     player.run(1.1, "");
     EXPECT_EQ(game.phase(), GamePhase::Playing);
     EXPECT_EQ(game.attempt(), 2);
     player.pass_hoop();
-    EXPECT_EQ(game.score(), 10);
-    EXPECT_EQ(game.best(), 10);
+    EXPECT_EQ(game.score(), 20);
+    EXPECT_EQ(game.best(), 20);
 }
 
 TEST(Game, ThreeFallsAndTheGameIsOver)
@@ -631,17 +667,17 @@ TEST(Game, AFallStartsThisLevelOverNotTheFirst)
     player.pass_hoop();
     player.run(10.0, "a");
     ASSERT_EQ(game.phase(), GamePhase::LevelComplete);
-    EXPECT_EQ(game.score(), 5);
-    EXPECT_EQ(game.best(), 5);
+    EXPECT_EQ(game.score(), 10);
+    EXPECT_EQ(game.best(), 10);
     player.run(dt, "");
     player.run(dt, "a");
     ASSERT_EQ(game.level_index(), 1u);
 
     player.pass_hoop();
-    EXPECT_EQ(game.score(), 10);
+    EXPECT_EQ(game.score(), 20);
     player.run(0.4, "");
     ASSERT_EQ(game.phase(), GamePhase::LevelFailed);
-    EXPECT_EQ(game.score(), 10);
+    EXPECT_EQ(game.score(), 20);
     player.run(1.1, "");
     EXPECT_EQ(game.phase(), GamePhase::Playing);
     EXPECT_EQ(game.level_index(), 1u);
@@ -682,14 +718,15 @@ TEST(Game, AttemptsAndPointsFromTheNumbers)
 {
     Tunables tunables;
     tunables.attempts = 1.0;
-    tunables.hoop_points = 2.0;
+    tunables.salto_points = 2.0;
+    tunables.hoop_multiplier = 3.0;
     Game game{Campaign{{"a"}}, loader({{"a", level_with_hoop(14.0)}}), tunables};
     GamePlayer player{game};
     player.pass_hoop();
-    EXPECT_EQ(game.score(), 2);
+    EXPECT_EQ(game.score(), 6);
     player.run(10.0, "a");
     EXPECT_EQ(game.phase(), GamePhase::CampaignComplete);
-    EXPECT_EQ(game.best(), 2);
+    EXPECT_EQ(game.best(), 6);
 
     Game falls{Campaign{{"a"}}, loader({{"a", level(30.0, 2.0)}}), tunables};
     GamePlayer{falls}.fall();
@@ -703,7 +740,7 @@ TEST(Game, RecordIsTheFileOrThisRun)
     EXPECT_EQ(game.record(), 3);
     EXPECT_EQ(game.record(), 3);
     player.pass_hoop();
-    EXPECT_EQ(game.record(), 5);
+    EXPECT_EQ(game.record(), 10);
 }
 
 TEST(Game, AAfterTheLevelMovesOn)
