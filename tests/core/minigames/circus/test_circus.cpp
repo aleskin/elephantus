@@ -76,22 +76,19 @@ TEST(Circus, OnePlayerAtATime)
                  std::invalid_argument);
 }
 
-TEST(Circus, OverAfterTheLastAttempt)
+TEST(Circus, OverAfterTheLastLevel)
 {
-    const KvDocument config = parse_kv("[circus.game]\nattempts = 2\n");
-    CircusMinigame game{one_level(), short_level, config, MinigameSetup{1, 7}};
+    CircusMinigame game{one_level(), short_level, KvDocument{}, MinigameSetup{1, 7}};
     EXPECT_EQ(game.game().record(), 7);
     InputTracker tracker;
-    for (int attempt = 0; attempt < 2; ++attempt)
+    for (int i = 0; i < 400 && game.game().phase() == GamePhase::Playing; ++i)
     {
-        EXPECT_EQ(game.outcome(), MinigameOutcome::Playing);
-        for (int i = 0; i < 400 && game.game().phase() == GamePhase::Playing; ++i)
-        {
-            step(game, tracker, true, 0.01);
-        }
-        step(game, tracker, false, 0.01);
         step(game, tracker, true, 0.01);
     }
+    ASSERT_EQ(game.game().phase(), GamePhase::CampaignComplete);
+    EXPECT_EQ(game.outcome(), MinigameOutcome::Playing);
+    step(game, tracker, false, 0.01);
+    step(game, tracker, true, 0.01);
     EXPECT_EQ(game.outcome(), MinigameOutcome::Won);
     EXPECT_EQ(game.points(0), 0);
 }

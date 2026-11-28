@@ -60,7 +60,7 @@ void CircusMinigame::step(std::span<const InputFrame> players, double dt)
 
 MinigameOutcome CircusMinigame::outcome() const
 {
-    // The circus is never lost: when the attempts are over the best one counts.
+    // The circus is never lost: when the game is over its points count.
     return game_.phase() == GamePhase::Done ? MinigameOutcome::Won : MinigameOutcome::Playing;
 }
 

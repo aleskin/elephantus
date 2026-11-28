@@ -95,7 +95,7 @@ std::vector<Event> Game::step(const InputFrame& input, double dt)
             if (attempts_left() > 0)
             {
                 ++attempt_;
-                start_attempt();
+                restart_level();
             }
             else
             {
@@ -111,12 +111,6 @@ std::vector<Event> Game::step(const InputFrame& input, double dt)
         }
         return {};
     case GamePhase::CampaignComplete:
-        if (a)
-        {
-            ++attempt_;
-            start_attempt();
-        }
-        return {};
     case GamePhase::GameOver:
         if (a)
         {
@@ -136,20 +130,15 @@ std::vector<Event> Game::step(const InputFrame& input, double dt)
         }
         if (event.kind == EventKind::LevelFinished)
         {
-            if (level_index_ + 1 < campaign_.levels.size())
-            {
-                phase_ = GamePhase::LevelComplete;
-            }
-            else
-            {
-                end_attempt();
-                phase_ = attempts_left() > 0 ? GamePhase::CampaignComplete : GamePhase::GameOver;
-            }
+            keep_score();
+            phase_ = level_index_ + 1 < campaign_.levels.size() ? GamePhase::LevelComplete
+                                                                : GamePhase::CampaignComplete;
         }
     }
     if (world_.failed())
     {
-        end_attempt();
+        // TODO(CEL-00060): the points of the level burn on a fall until the owner answers.
+        score_ = level_start_score_;
         phase_ = GamePhase::LevelFailed;
         failed_for_ = 0.0;
     }
@@ -173,23 +162,15 @@ void Game::set_tunables(const Tunables& tunables)
     world_.set_tunables(tunables_);
 }
 
-void Game::start_attempt()
+void Game::restart_level()
 {
-    score_ = 0;
-    if (level_index_ != 0)
-    {
-        level_index_ = 0;
-        world_ = World{loader_(campaign_.levels.front()), tunables_};
-    }
-    else
-    {
-        world_ = World{world_.level(), tunables_};
-    }
+    world_ = World{world_.level(), tunables_};
     phase_ = GamePhase::Playing;
 }
 
-void Game::end_attempt()
+void Game::keep_score()
 {
+    level_start_score_ = score_;
     best_ = std::max(best_, score_);
 }
 

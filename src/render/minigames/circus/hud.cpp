@@ -127,7 +127,7 @@ void draw_hud(const core::circus::Game& game, const core::ButtonLabels& labels)
         break;
     case core::circus::GamePhase::LevelFailed:
         draw_big_centred(game.attempts_left() > 0 ? "Ой! Ещё разок…" : "Ой!", 150, bad_colour);
-        draw_small_centred("Очки за попытку: " + std::to_string(game.score()), 250);
+        draw_small_centred("Попыток осталось: " + std::to_string(game.attempts_left()), 250);
         break;
     case core::circus::GamePhase::LevelComplete:
     {
@@ -136,17 +136,18 @@ void draw_hud(const core::circus::Game& game, const core::ButtonLabels& labels)
         break;
     }
     case core::circus::GamePhase::CampaignComplete:
-        draw_big_centred("Браво! Очки: " + std::to_string(game.score()), 150, good_colour);
-        draw_small_centred("Ещё попытка — нажми " + label_of(labels, core::GameButton::A), 250);
-        break;
     case core::circus::GamePhase::GameOver:
     case core::circus::GamePhase::Done:
-        draw_big_centred("Попытки кончились! Лучшие очки: " + std::to_string(game.best()), 150,
-                         button_colour);
+    {
+        const bool won = game.phase() != core::circus::GamePhase::GameOver;
+        const std::string title = won ? "Браво! Все уровни! Очки: " : "Попытки кончились! Очки: ";
+        draw_big_centred(title + std::to_string(game.best()), 150,
+                         won ? good_colour : button_colour);
         draw_small_centred("Рекорд: " + std::to_string(game.record()) + ". Нажми " +
                                label_of(labels, core::GameButton::A),
                            250);
         break;
+    }
     }
 }
 

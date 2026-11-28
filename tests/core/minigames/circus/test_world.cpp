@@ -513,24 +513,25 @@ TEST(Game, FivePointsForAHoop)
     EXPECT_EQ(game.best(), 0);
 }
 
-TEST(Game, AFallEndsTheAttemptAndKeepsItsPoints)
+TEST(Game, AFallTakesAnAttemptAndBurnsTheLevelPoints)
 {
-    // TODO(CEL-00056): the points of a fallen attempt count for now.
+    // TODO(CEL-00060): the points of the level burn on a fall for now.
     Game game{Campaign{{"a"}}, loader({{"a", level_with_hoop(14.0)}})};
     GamePlayer player{game};
     EXPECT_EQ(game.attempt(), 1);
     EXPECT_EQ(game.attempt_count(), 3);
     player.pass_hoop();
+    EXPECT_EQ(game.score(), 5);
     player.run(0.4, "");
     ASSERT_EQ(game.phase(), GamePhase::LevelFailed);
-    EXPECT_EQ(game.best(), 5);
+    EXPECT_EQ(game.score(), 0);
     EXPECT_EQ(game.attempt(), 1);
 
     player.run(1.1, "");
     EXPECT_EQ(game.phase(), GamePhase::Playing);
     EXPECT_EQ(game.attempt(), 2);
     EXPECT_EQ(game.score(), 0);
-    EXPECT_EQ(game.best(), 5);
+    EXPECT_EQ(game.best(), 0);
 }
 
 TEST(Game, ThreeFallsAndTheGameIsOver)
@@ -547,9 +548,34 @@ TEST(Game, ThreeFallsAndTheGameIsOver)
     EXPECT_EQ(game.phase(), GamePhase::Done);
 }
 
-TEST(Game, TheLastLevelEndsTheAttemptAndANewOneStarts)
+TEST(Game, AFallStartsThisLevelOverNotTheFirst)
 {
-    // TODO(CEL-00056): finishing takes an attempt for now.
+    Game game{Campaign{{"a", "b"}},
+              loader({{"a", level_with_hoop(14.0)}, {"b", level_with_hoop(14.0)}})};
+    GamePlayer player{game};
+    player.pass_hoop();
+    player.run(10.0, "a");
+    ASSERT_EQ(game.phase(), GamePhase::LevelComplete);
+    EXPECT_EQ(game.score(), 5);
+    EXPECT_EQ(game.best(), 5);
+    player.run(dt, "");
+    player.run(dt, "a");
+    ASSERT_EQ(game.level_index(), 1u);
+
+    player.pass_hoop();
+    EXPECT_EQ(game.score(), 10);
+    player.run(0.4, "");
+    ASSERT_EQ(game.phase(), GamePhase::LevelFailed);
+    EXPECT_EQ(game.score(), 5);
+    player.run(1.1, "");
+    EXPECT_EQ(game.phase(), GamePhase::Playing);
+    EXPECT_EQ(game.level_index(), 1u);
+    EXPECT_EQ(game.attempt(), 2);
+    EXPECT_DOUBLE_EQ(game.world().elephant().x, 2.0);
+}
+
+TEST(Game, TheLastLevelEndsTheGame)
+{
     Game game{Campaign{{"a", "b"}}, loader({{"a", level(10.0, 10.0)}, {"b", level(20.0, 20.0)}})};
     GamePlayer player{game};
     player.run(dt, "");
@@ -560,8 +586,7 @@ TEST(Game, TheLastLevelEndsTheAttemptAndANewOneStarts)
     ASSERT_EQ(game.phase(), GamePhase::CampaignComplete);
     EXPECT_EQ(game.attempt(), 1);
     player.run(dt, "a");
-    EXPECT_EQ(game.attempt(), 2);
-    EXPECT_EQ(game.level_index(), 0u);
+    EXPECT_EQ(game.phase(), GamePhase::Done);
 }
 
 TEST(Game, AttemptsAndPointsFromTheNumbers)
@@ -573,10 +598,13 @@ TEST(Game, AttemptsAndPointsFromTheNumbers)
     GamePlayer player{game};
     player.pass_hoop();
     EXPECT_EQ(game.score(), 2);
-    player.run(0.4, "");
-    player.run(1.1, "");
-    EXPECT_EQ(game.phase(), GamePhase::GameOver);
+    player.run(10.0, "a");
+    EXPECT_EQ(game.phase(), GamePhase::CampaignComplete);
     EXPECT_EQ(game.best(), 2);
+
+    Game falls{Campaign{{"a"}}, loader({{"a", level(30.0, 2.0)}}), tunables};
+    GamePlayer{falls}.fall();
+    EXPECT_EQ(falls.phase(), GamePhase::GameOver);
 }
 
 TEST(Game, RecordIsTheFileOrThisRun)
@@ -586,7 +614,7 @@ TEST(Game, RecordIsTheFileOrThisRun)
     EXPECT_EQ(game.record(), 3);
     player.pass_hoop();
     EXPECT_EQ(game.record(), 3);
-    player.run(0.4, "");
+    player.run(10.0, "a");
     EXPECT_EQ(game.record(), 5);
 }
 
